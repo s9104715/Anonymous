@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Anonymous</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_tools">Tools</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_send">Send</string>
+
+    <string name="user_default_selfie_url">https://firebasestorage.googleapis.com/v0/b/anonymous-d01f4.appspot.com/o/UserSelfie%2Fdefault.png?alt=media&amp;token=12c64d68-2cb2-4bed-8952-ba4248ec94f3</string>
+    <!--for google login-->
+    <string name="server_client_id">958278448120-km99lpls81jql8ahvif2lgu4ucfc2ip0.apps.googleusercontent.com</string>
+    <!--for fb login-->
+    <string name="facebook_app_id">2374865746084641</string>
+    <string name="fb_login_protocol_scheme">fb2374865746084641</string>
+</resources>

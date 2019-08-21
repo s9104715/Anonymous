@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditText
+        android:id="@+id/name_ET"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="暱稱"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="40dp"
+        android:padding="10dp"/>
+
+    <EditText
+        android:id="@+id/acc_ET"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="電子信箱"
+       app:layout_constraintTop_toBottomOf="@id/name_ET"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"/>
+
+    <EditText
+        android:id="@+id/pwd_ET"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="密碼"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@id/acc_ET"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"/>
+
+    <EditText
+        android:id="@+id/confirm_pwd_ET"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="密碼確認"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@id/pwd_ET"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"/>
+
+    <Button
+        android:id="@+id/register_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="註冊"
+        app:layout_constraintTop_toBottomOf="@id/confirm_pwd_ET"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="20dp"/>
+
+</android.support.constraint.ConstraintLayout>
