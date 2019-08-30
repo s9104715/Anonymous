@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Login;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -38,7 +38,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
+import com.test.anonymous.MainActivity;
+import com.test.anonymous.R;
 import java.util.HashMap;
 import java.util.Map;
 import io.paperdb.Paper;

@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Login;
 
 public class User {
 

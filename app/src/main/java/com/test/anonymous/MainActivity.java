@@ -2,15 +2,14 @@ package com.test.anonymous;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.util.Base64;
-import android.util.Log;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.widget.TextView;
 
 import com.facebook.login.LoginManager;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -28,14 +28,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.Login.LoginActivity;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.w3c.dom.Text;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    //底部toolbar
+    private BottomNavigationView botToolBar;
 
     private ProgressDialog signOutPD;
 
@@ -47,42 +50,17 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-        navigationView.setNavigationItemSelectedListener(this);
+
+
 
         auth = FirebaseAuth.getInstance();
         firestore =FirebaseFirestore.getInstance();
 
-        View header = navigationView.getHeaderView(0);//取得nav的header及其物件
-        final CircleImageView selfie = header.findViewById(R.id.nav_selfie);
-        firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if(documentSnapshot.exists()){
-                            Picasso.get().load(documentSnapshot.getString("selfiePath"))
-                                    //圖片使用最低分辨率,降低使用空間大小
-                                    .fit()
-                                    .centerCrop()
-                                    .into(selfie);//取得大頭貼
-                        }
-                    }
-                });
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+
+        setupNavigationView(toolbar);
+        setupBotToolbar();
     }
 
     @Override
@@ -143,6 +121,83 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    //測選單建置
+    private void setupNavigationView(Toolbar topToolbar){
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, topToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener(this);
+
+        View header = navigationView.getHeaderView(0);//取得nav的header及其物件
+        final TextView nameTV = header.findViewById(R.id.nav_name_TV);
+        final CircleImageView selfie = header.findViewById(R.id.nav_selfie);
+
+        //載入帳號資料
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(documentSnapshot.exists()){
+
+                            nameTV.setText(documentSnapshot.get("name").toString());
+                            Picasso.get().load(documentSnapshot.getString("selfiePath"))
+                                    //圖片使用最低分辨率,降低使用空間大小
+                                    .fit()
+                                    .centerCrop()
+                                    .into(selfie);//取得大頭貼
+                        }
+                    }
+                });
+    }
+
+//    底部toolbar建置
+//    換頁時所使用的transaction不能重複使用，每次換頁都要重新宣告一次
+    private void setupBotToolbar(){
+
+        final FragmentRandomChat randomChat = new FragmentRandomChat();
+        final FragmentChatRoom chatRoom = new FragmentChatRoom();
+        final FragmentFriendsList fragmentFriendsList = new FragmentFriendsList();
+        final FragmentSetting setting = new FragmentSetting();
+
+        //預設Fragment
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.main_container , randomChat).commit();
+
+        botToolBar = findViewById(R.id.main_bottom_toolbar);
+        botToolBar.setSelectedItemId(R.id.example1);
+        botToolBar.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+                switch (menuItem.getItemId()){
+                    case R.id.example1:
+                        transaction.replace(R.id.main_container , randomChat).commit();//進入MainPageFragment
+//                        FRAGMENT_INDEX = 0;
+                        return true;
+                    case R.id.example2:
+                        transaction.replace(R.id.main_container , chatRoom).commit();//進入TaskFragment
+//                        FRAGMENT_INDEX = 1;
+                        return true;
+                    case R.id.example3:
+                        transaction.replace(R.id.main_container , fragmentFriendsList).commit();//進入ShareFragment
+//                        FRAGMENT_INDEX = 2;
+                        break;
+                    case R.id.example4:
+                        transaction.replace(R.id.main_container ,setting).commit();//SettingFragment
+//                        FRAGMENT_INDEX = 3;
+                        break;
+                }
+                return true;
+            }
+        });
     }
 
     private void showSignOutDialog(){

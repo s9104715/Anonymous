@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/example1"
+        android:enabled="true"
+        android:icon="@drawable/share"
+        android:title="隨機聊天"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/example2"
+        android:enabled="true"
+        android:icon="@drawable/share"
+        android:title="聊天室"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/example3"
+        android:enabled="true"
+        android:icon="@drawable/share"
+        android:title="朋友列表"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/example4"
+        android:enabled="true"
+        android:icon="@drawable/share"
+        android:title="個人設定"
+        app:showAsAction="always"/>
+
+</menu>
