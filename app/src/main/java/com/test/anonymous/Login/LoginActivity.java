@@ -273,7 +273,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //                                            storeRef.child("UserSelfie/" + auth.getCurrentUser().getUid() + ".png").putFile(acc.getPhotoUrl());
 //                                        }
 
-                                        User user = new User(acc.getDisplayName() , "" , true , acc.getPhotoUrl().toString() , "GOOGLE_LOGIN");//透過google帳號登入則verify值為true
+                                        User user = new User(acc.getDisplayName() , "" , 0 , true , acc.getPhotoUrl().toString() , "GOOGLE_LOGIN");//透過google帳號登入則verify值為true
                                         firestore.collection("User").document(auth.getCurrentUser().getUid()).set(user)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
@@ -361,7 +361,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //                                                    storeRef.child("UserSelfie/" + auth.getCurrentUser().getUid() + ".png").putFile(task.getResult().getUser().getPhotoUrl());
 //                                                }
 
-                                                User user = new User(task.getResult().getUser().getDisplayName() , "" , true , task.getResult().getUser().getPhotoUrl().toString() , "FACEBOOK_LOGIN");//透過fb帳號登入則verify值為true
+                                                User user = new User(task.getResult().getUser().getDisplayName() , "" , 0 ,  true , task.getResult().getUser().getPhotoUrl().toString() , "FACEBOOK_LOGIN");//透過fb帳號登入則verify值為true
                                                 firestore.collection("User").document(auth.getCurrentUser().getUid()).set(user)
                                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                             @Override

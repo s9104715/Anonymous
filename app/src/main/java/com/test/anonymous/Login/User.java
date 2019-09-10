@@ -4,6 +4,7 @@ public class User {
 
     private String name;
     private String gender;
+    private int age;
     private boolean verify;//帳號有無啟用，必須通過信箱驗證信
     private String selfiePath;//存放照片url
     private String LOGIN_TYPE;//登入方法包含NORMAL_LOGIN , GOOGLE_LOGIN , FACEBOOK_LOGIN
@@ -11,9 +12,10 @@ public class User {
     public User() {
     }
 
-    public User(String name, String gender, boolean verify, String selfiePath, String LOGIN_TYPE) {
+    public User(String name, String gender, int age ,  boolean verify, String selfiePath, String LOGIN_TYPE) {
         this.name = name;
         this.gender = gender;
+        this.age = age;
         this.verify = verify;
         this.selfiePath = selfiePath;
         this.LOGIN_TYPE = LOGIN_TYPE;
@@ -33,6 +35,14 @@ public class User {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public boolean isVerify() {

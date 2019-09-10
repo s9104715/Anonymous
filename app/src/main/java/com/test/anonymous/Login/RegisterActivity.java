@@ -119,7 +119,7 @@ public class RegisterActivity  extends AppCompatActivity implements View.OnClick
                                         Log.e("EmailVerification：" , "success！");
 
                                         //創建會員資料
-                                        User user = new User(name  , "" , false , getString(R.string.user_default_selfie_url) , "NORMAL_LOGIN");
+                                        User user = new User(name  , "", 0 , false , getString(R.string.user_default_selfie_url) , "NORMAL_LOGIN");
                                         firestore.collection("User").document(firebaseUser.getUid()).set(user)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override

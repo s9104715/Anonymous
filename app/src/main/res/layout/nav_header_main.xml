@@ -16,7 +16,7 @@
         android:id="@+id/nav_selfie"
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:src="@color/gray"
+        android:src="@drawable/default_selfie"
         android:contentDescription="@string/nav_header_desc"
         app:civ_border_color="@color/gray"
         app:civ_border_width="2dp"/>
