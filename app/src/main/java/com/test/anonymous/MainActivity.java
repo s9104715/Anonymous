@@ -7,9 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -20,7 +17,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
-
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -29,7 +25,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.facebook.login.LoginManager;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,12 +33,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.Login.LoginActivity;
-
-import org.w3c.dom.Text;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity
@@ -51,9 +42,7 @@ public class MainActivity extends AppCompatActivity
 
     //底部toolbar
     private BottomNavigationView botToolBar;
-
     private ProgressDialog signOutPD;
-
     private AlertDialog initUserAD;//讓新用戶於建立完帳號後更新性別年齡等資料
 
     //Firebase
@@ -293,7 +282,6 @@ public class MainActivity extends AppCompatActivity
 
                                     RadioButton radioButton =  v.findViewById(genderRG.getCheckedRadioButtonId());
                                     String gender = (String) radioButton.getText();
-
                                     EditText ageET = v.findViewById(R.id.age_ET);
                                     String age = ageET.getText().toString().trim();
 
@@ -302,7 +290,6 @@ public class MainActivity extends AppCompatActivity
                                         ageET.requestFocus();
                                         return;
                                     }
-
                                     //更新使用者資料
                                     Map<String  , Object> update = new HashMap<>();
                                     update.put("gender" , gender);
@@ -312,6 +299,7 @@ public class MainActivity extends AppCompatActivity
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                             Log.e("initUser" , "success");
+                                            Toast.makeText(MainActivity.this , "設定完成" , Toast.LENGTH_LONG).show();
                                             initUserAD.dismiss();
                                         }
                                     });

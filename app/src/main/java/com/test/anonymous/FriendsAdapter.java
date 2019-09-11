@@ -10,19 +10,13 @@ import android.widget.TextView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-
 import java.util.List;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseViewHolder> {
 
     private List<ItemFriends> list;//清單
     private BaseViewHolder viewHolder;
-
-    //firestore
-    private static FirebaseAuth auth;
-    private static FirebaseFirestore firestore;
 
     //點擊效果
     private OnItemClickListener clickListener;
@@ -64,7 +58,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
     @NonNull
     @Override
     public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-
         View view = LayoutInflater.from(viewGroup.getContext() ).inflate( R.layout.item_friends, viewGroup, false);
         viewHolder= new BaseViewHolder(view, clickListener);
         return viewHolder;
@@ -72,10 +65,6 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
 
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder baseViewHolder, int position) {
-
-        //firebase初始化
-        auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
 
         final ItemFriends currentItem = list.get(position);
         //load friends info
@@ -89,7 +78,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
 
     @Override
     public int getItemCount() {
-        return 0;
+        return list.size();
     }
 
     public void setOnItemClickListener(OnItemClickListener clickListener) {

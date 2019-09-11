@@ -22,6 +22,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.test.anonymous.R;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class RegisterActivity  extends AppCompatActivity implements View.OnClickListener {
 
     private EditText nameET , accET , pwdET , conPwdET;
@@ -125,6 +128,9 @@ public class RegisterActivity  extends AppCompatActivity implements View.OnClick
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
 
+//                                                        //創建user的子collection
+//                                                        createDefaultUserCollection();
+
                                                         Toast.makeText(getApplicationContext() , "信箱驗證信已寄出，請到註冊的信箱啟動帳號" , Toast.LENGTH_LONG).show();
                                                         //登出讓使用者重新登入
                                                         FirebaseAuth.getInstance().signOut();
@@ -158,4 +164,19 @@ public class RegisterActivity  extends AppCompatActivity implements View.OnClick
         registPD.setMessage("註冊中.....");
         registPD.show();
     }
+
+//    //產生預設的user子collection
+//    private void createDefaultUserCollection(){
+//
+//        //create Random_Friends
+//        Map<String, Object> update = new HashMap<>();
+//        update.put("remark", "this is a base document , do not remove");
+//        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends").document("base_doc")
+//                .set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void aVoid) {
+//                Log.e("add collection" , "success");
+//            }
+//        });
+//    }
 }

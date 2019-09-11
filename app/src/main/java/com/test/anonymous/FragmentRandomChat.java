@@ -1,5 +1,6 @@
 package com.test.anonymous;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -7,24 +8,19 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FragmentRandomChat extends Fragment implements View.OnClickListener {
-
     //RecyclerView
     private List<ItemFriends> friends;
     private RecyclerView list;
@@ -32,6 +28,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private RecyclerView.LayoutManager layoutManager;
 
     private Button chatBtn;
+    private ProgressDialog waitingPD;
 
     //firestore
     private FirebaseAuth auth;
@@ -51,8 +48,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-
-        setupRecyclerView();
+        loadFriends();
         return view;
     }
 
@@ -60,6 +56,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.chat_btn:
+
                 randomChat();
                 break;
         }
@@ -69,7 +66,27 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private void loadFriends(){
 
         friends = new ArrayList<>();
-        //loadFriends
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(final QuerySnapshot queryDocumentSnapshots) {
+                for (final DocumentSnapshot friendsDocumentSnapshot : queryDocumentSnapshots){
+                    firestore.collection("User").document(friendsDocumentSnapshot.getId()).get()
+                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot userDocumentSnapshot) {
+                                    friends.add(new ItemFriends(userDocumentSnapshot.getString("selfiePath") ,
+                                                                                              userDocumentSnapshot.getString("name") ,
+                                                                                              friendsDocumentSnapshot.getString("chatRoomID")));
+                                    //載入完畢
+                                    if(friends.size() == queryDocumentSnapshots.size()){
+                                        setupRecyclerView();
+                                    }
+                                }
+                            });
+                }
+            }
+        });
     }
 
     private void setupRecyclerView() {
@@ -84,38 +101,51 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
             @Override
             public void onItemClick(int position) {
                 //click method
-
+                Intent intent = new Intent(getContext() , ChatRoomActivity.class);
+                intent.putExtra("chatRoomID" , friends.get(position).getChatRoomID());
+                startActivity(intent);
             }
         });
     }
 
-    //開始隨機聊天
+    /*開始隨機聊天
+         建立match的情況(角色為Matcher)：
+             沒有match
+             所以match中的contact都為true
+         不建立match的情況(角色為Finder)：
+              已存在match且有至少一match的contact為false  */
     private void randomChat(){
 
-        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends").document("base_doc")
-                .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        firestore.collection("RandomMatch").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(documentSnapshot.exists()){
-
-                    //search new friends
-
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                Intent intent = new Intent(getContext() , RandomChatWaiting.class);
+                if(queryDocumentSnapshots.size() == 0 ){
+                    //建立match的狀況(角色為Matcher)
+                    intent.putExtra("hasMatcher" , false)
+                                .putExtra("order" , 1);
                 }else {
-                    //create Random_Friends collection and set base_doc as 1st document
-                    Map<String, Object> update = new HashMap<>();
-                    update.put("remark", "this is a base document , do not remove");
-                    firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends").document("base_doc")
-                            .set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-
-                            Log.e("add collection" , "success");
-                            //search new friends
-
+                    boolean hasMatcher = false;
+                    int order = 0;
+                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                        if(!documentSnapshot.getBoolean("contact")){
+                            hasMatcher = true;
                         }
-                    });
+                        order++;
+                    }
+                    if (hasMatcher){
+                        //不建立match的狀況(角色為Finder)
+                        intent.putExtra("hasMatcher" , true);
+                    }else {
+                        //建立match的狀況(角色為Matcher)
+                        intent.putExtra("hasMatcher" , false)
+                                    .putExtra("order" , (order + 1));
+                    }
                 }
+               startActivity(intent);
             }
         });
     }
+
+
 }
