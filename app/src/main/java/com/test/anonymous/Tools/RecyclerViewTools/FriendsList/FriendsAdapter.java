@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Tools.RecyclerViewTools.FriendsList;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -7,9 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.R;
+
 import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 

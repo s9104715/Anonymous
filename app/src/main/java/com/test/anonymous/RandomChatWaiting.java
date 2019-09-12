@@ -84,6 +84,10 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
         switch (view.getId()){
             case R.id.cancel_btn:
                 countDownTask.disableTask();
+                if(!getIntent().getExtras().getBoolean("hasMatcher")){
+                    matchTask.disableTask();
+                    deleteMatcher();
+                }
                 onBackPressed();
                 break;
         }
@@ -146,7 +150,9 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                             public void onSuccess(final DocumentSnapshot documentSnapshot) {
 
                                 Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
-                                intent.putExtra("chatRoomID" ,  documentSnapshot.getString("chatRoomID"));
+                                intent.putExtra("chatRoomID" ,  documentSnapshot.getString("chatRoomID"))
+                                            .putExtra("myUID" , auth.getCurrentUser().getUid())
+                                            .putExtra("otherUID" , matcherUID);
                                 startActivity(intent);
                                 finish();
                                 runOnUiThread(new Runnable() {
@@ -241,17 +247,20 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
 
     //建立聊天室(必定由建立matcher的那一方建立)
     //user1為自己 , user2為對方
-    private  void createChatRoom(final String chatRoomID , String user1 , String user2){
+    private  void createChatRoom(final String chatRoomID , final String user1 , final String user2){
        //由建立matcher的那一方建立
         Map<String, Object> update = new HashMap<>();
         update.put("user1", user1);
         update.put("user2", user2);
+        update.put("lineNum" , 0);
         firestore.collection("RandomChatRoom").document(chatRoomID).set(update)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
-                        intent.putExtra("chatRoomID" ,  chatRoomID );
+                        intent.putExtra("chatRoomID" ,  chatRoomID )
+                                    .putExtra("myUID" , user1)
+                                    .putExtra("otherUID", user2);
                         startActivity(intent);
                         finish();
                         Toast.makeText(getApplicationContext(), "尋找成功", Toast.LENGTH_LONG).show();

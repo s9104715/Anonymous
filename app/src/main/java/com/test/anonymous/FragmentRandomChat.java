@@ -17,6 +17,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
+import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +59,6 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.chat_btn:
-
                 randomChat();
                 break;
         }
@@ -75,7 +77,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                             .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                 @Override
                                 public void onSuccess(DocumentSnapshot userDocumentSnapshot) {
-                                    friends.add(new ItemFriends(userDocumentSnapshot.getString("selfiePath") ,
+                                    friends.add(new ItemFriends(friendsDocumentSnapshot.getId() ,
+                                                                                              userDocumentSnapshot.getString("selfiePath") ,
                                                                                               userDocumentSnapshot.getString("name") ,
                                                                                               friendsDocumentSnapshot.getString("chatRoomID")));
                                     //載入完畢
@@ -102,7 +105,10 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
             public void onItemClick(int position) {
                 //click method
                 Intent intent = new Intent(getContext() , ChatRoomActivity.class);
-                intent.putExtra("chatRoomID" , friends.get(position).getChatRoomID());
+                intent.putExtra("chatRoomID" , friends.get(position).getChatRoomID())
+                            .putExtra("myUID" , auth.getCurrentUser().getUid())
+                            .putExtra("otherUID" , friends.get(position).getUserUID());
+
                 startActivity(intent);
             }
         });

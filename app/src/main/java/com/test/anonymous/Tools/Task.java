@@ -8,6 +8,7 @@ public class Task {
     private Timer timer;
     private TimerTask timerTask;
 
+    //此建構子需定義timerTask
     public Task(Timer timer, TimerTask timerTask) {
         this.timer = timer;
         this.timerTask = timerTask;
