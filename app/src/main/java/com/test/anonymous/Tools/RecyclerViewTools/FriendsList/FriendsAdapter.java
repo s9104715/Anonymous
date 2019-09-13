@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -32,13 +33,17 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
     public static class BaseViewHolder extends RecyclerView.ViewHolder {
 
         private CircleImageView selfie;
-        private TextView nameTV;
+        private TextView nameTV , lastLineTV , unreadLineNumTV;
+        private RelativeLayout unreadLineNum;
 
         private BaseViewHolder(View itemView , final OnItemClickListener listener) {
             super(itemView);
 
             selfie = itemView.findViewById(R.id.selfie);
             nameTV = itemView.findViewById(R.id.name_TV);
+            lastLineTV = itemView.findViewById(R.id.last_line_TV);
+            unreadLineNum = itemView.findViewById(R.id.unRead_line_num);
+            unreadLineNumTV = itemView.findViewById(R.id.unRead_line_num_TV);
 
             //監聽器設置
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +79,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
                 .centerCrop()
                 .into(baseViewHolder.selfie);//取得大頭貼
         baseViewHolder.nameTV.setText(currentItem.getName());
+        baseViewHolder.lastLineTV.setText(currentItem.getLastLine());
+        if(currentItem.getUnreadLineNum() > 0){
+            baseViewHolder.unreadLineNumTV.setText(String.valueOf(currentItem.getUnreadLineNum()));
+            baseViewHolder.unreadLineNum.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

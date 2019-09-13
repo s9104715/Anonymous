@@ -9,12 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.TextProcessor;
+
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -112,7 +112,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                     .fit()
                     .centerCrop()
                     .into(holder.mySelfie);
-            holder.myText.setText(textAutoWrap(currentItem.getText()));
+            holder.myText.setText(new TextProcessor().textAutoWrap(currentItem.getText() , 16));
             holder.myTime.setText(currentItem.getTime());
         }else {
 
@@ -128,7 +128,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                     .fit()
                     .centerCrop()
                     .into(holder.otherSelfie);
-            holder.otherText.setText(textAutoWrap(currentItem.getText()));
+            holder.otherText.setText(new TextProcessor().textAutoWrap(currentItem.getText() , 16));
             holder.otherTime.setText(currentItem.getTime());
         }
     }
@@ -154,20 +154,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
 
     public void setOnItemClickListener(OnItemClickListener clickListener) {
         this.clickListener = clickListener;
-    }
-
-    //文字自動換行
-    public String textAutoWrap(String text){
-
-        StringBuffer sb = new StringBuffer(text);
-        if(sb.length() > 16){
-            //text超過16個字
-            for(int i = 16 ; i < sb.length() ; i += 16){
-                //每16個字換行
-                sb.insert(i , "\n");
-            }
-        }
-        return sb.toString();
     }
 }
 

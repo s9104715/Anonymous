@@ -221,6 +221,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
            //更新User中的Random_Friends朋友名單(Matcher)
            Map<String, Object> update = new HashMap<>();
            update.put("chatRoomID", chatRoomID);
+           update.put("readLine" , 0);//已讀取句數
            firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
                    .document(uid).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                @Override
@@ -229,6 +230,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                    //更新User中的Random_Friends朋友名單(Matcher幫Finder更新)
                    Map<String, Object> update = new HashMap<>();
                    update.put("chatRoomID", chatRoomID);
+                   update.put("readLine" , 0);//已讀取句數
                    firestore.collection("User").document(uid).collection("Random_Friends")
                            .document(auth.getCurrentUser().getUid()).set(update)
                            .addOnSuccessListener(new OnSuccessListener<Void>() {

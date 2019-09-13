@@ -8,8 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -17,7 +15,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.squareup.picasso.Picasso;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ChatAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ItemChat;
@@ -29,7 +26,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import at.markushi.ui.CircleButton;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatRoomActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -135,6 +131,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                             new MyTime().getFormatTime(documentSnapshot.get("time" , Timestamp.class) , "hh:mm")));
                                                 }
                                                 setupRecyclerView();
+                                                updateReadLine();//更新已讀數
                                             }
                                         });
                                     }
@@ -151,6 +148,20 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         list.setAdapter(chatAdapter);
         list.getRecycledViewPool().setMaxRecycledViews(0 ,0);//防止丟失數據
         list.scrollToPosition(chatList.size()-1);//自動滾動到底部
+    }
+
+    //更新已讀數
+    private void updateReadLine(){
+        firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Map<String , Object> update = new HashMap<>();
+                        update.put("readLine", documentSnapshot.get("lineNum" , Integer.class));
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                .document(getIntent().getExtras().getString("otherUID")).update(update);
+                    }
+                });
     }
 
     //資料餵給資料庫都是由此function負責
@@ -185,7 +196,14 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                     Map<String , Object> update = new HashMap<>();
                                     update.put("lineNum", (lineNum + 1));
                                     firestore.collection("RandomChatRoom").document(chatRoomID)
-                                            .update(update);
+                                            .update(update)
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            //更新已讀數
+                                            updateReadLine();
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -216,6 +234,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                                                                               documentSnapshot.getString("text") ,
                                                                                                               new MyTime().getFormatTime(documentSnapshot.get("time" , Timestamp.class) , "hh:mm")));
                                                 list.scrollToPosition(chatList.size()-1);//自動滾動到底部
+                                                updateReadLine();
                                             }
                                         }
                                     }
