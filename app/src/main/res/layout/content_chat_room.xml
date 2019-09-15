@@ -11,16 +11,19 @@
     <EditText
         android:id="@+id/input_ET"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
         android:hint=" 請在這輸入訊息！"
-        android:padding="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@+id/chat_btn"
         android:layout_toStartOf="@+id/chat_btn"
         android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
+        android:layout_marginLeft="50dp"
         android:background="@drawable/edit_text_style_gray"/>
 
     <at.markushi.ui.CircleButton
@@ -33,15 +36,27 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginBottom="5dp"
-        android:layout_marginRight="5dp"/>
+        android:layout_marginRight="5dp"
+        android:padding="12dp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/chat_btn"
-        android:layout_marginBottom="5dp">
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="60dp">
     </android.support.v7.widget.RecyclerView>
+
+    <at.markushi.ui.CircleButton
+        android:id="@+id/send_pic_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/send_pic"
+        app:cb_color="@color/white"
+        app:cb_pressedRingWidth="8dp"
+        android:layout_alignParentBottom="true"
+        android:padding="40dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="5dp"/>
 
 </RelativeLayout>

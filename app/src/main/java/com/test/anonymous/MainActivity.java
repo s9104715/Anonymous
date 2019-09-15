@@ -33,6 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.Login.LoginActivity;
+
 import java.util.HashMap;
 import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -49,6 +50,11 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
 
+    //constant fields
+    //螢幕長寬
+    public static int WINDOW_WIDTH;
+    public static int WINDOW_HEIGHT;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +70,7 @@ public class MainActivity extends AppCompatActivity
 
         setupNavigationView(toolbar);
         setupBotToolbar();
+        setupConstantFields();//載入螢幕長寬
         initUser();
     }
 
@@ -206,6 +213,8 @@ public class MainActivity extends AppCompatActivity
 
     private void showSignOutDialog(){
         signOutPD = new ProgressDialog(this);
+        signOutPD.setCancelable(false);
+        signOutPD.setCanceledOnTouchOutside(false);
         signOutPD.setTitle("登出");
         signOutPD.setMessage("登出中.....");
         signOutPD.show();
@@ -308,6 +317,11 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 });
+    }
+
+    public void setupConstantFields(){
+        WINDOW_WIDTH = getWindowManager().getDefaultDisplay().getWidth();
+        WINDOW_HEIGHT = getWindowManager().getDefaultDisplay().getHeight();
     }
 
  //產生fb登入所需的金鑰

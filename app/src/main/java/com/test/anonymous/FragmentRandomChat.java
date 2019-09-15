@@ -2,12 +2,14 @@ package com.test.anonymous;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,15 +25,18 @@ import com.test.anonymous.Tools.TextProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
+import cc.cloudist.acplibrary.ACProgressConstant;
+import cc.cloudist.acplibrary.ACProgressFlower;
+
 public class FragmentRandomChat extends Fragment implements View.OnClickListener {
     //RecyclerView
     private List<ItemFriends> friends;
     private RecyclerView list;
     private FriendsAdapter friendsAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private ACProgressFlower loadingPD;
 
     private Button chatBtn;
-    private ProgressDialog waitingPD;
 
     //firestore
     private FirebaseAuth auth;
@@ -72,6 +77,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     //載入朋友清單
     private void loadFriends(){
 
+        showLoadingDialog();
+
         friends = new ArrayList<>();
         //搜尋Random_Friends
         firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
@@ -104,6 +111,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                                                             //載入完畢
                                                             if(friends.size() == queryDocumentSnapshots.size()){
                                                                 setupRecyclerView();
+                                                                loadingPD.dismiss();
                                                             }
                                                         }
                                                     });
@@ -132,10 +140,20 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 intent.putExtra("chatRoomID" , friends.get(position).getChatRoomID())
                             .putExtra("myUID" , auth.getCurrentUser().getUid())
                             .putExtra("otherUID" , friends.get(position).getUserUID());
-
                 startActivity(intent);
             }
         });
+    }
+
+    public void showLoadingDialog(){
+         loadingPD = new ACProgressFlower.Builder(getContext())
+                .direction(ACProgressConstant.DIRECT_CLOCKWISE)
+                .themeColor(Color.WHITE)
+                .text("Loading......")
+                .fadeColor(Color.DKGRAY).build();
+         loadingPD.setCancelable(false);
+         loadingPD.setCanceledOnTouchOutside(false);
+         loadingPD.show();
     }
 
     /*開始隨機聊天

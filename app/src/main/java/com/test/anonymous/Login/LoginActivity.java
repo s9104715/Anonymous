@@ -208,6 +208,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private void showLoginDialog() {
         loginPD = new ProgressDialog(LoginActivity.this);
+        loginPD.setCancelable(false);
+        loginPD.setCanceledOnTouchOutside(false);
         loginPD.setTitle("登入");
         loginPD.setMessage("登入中.....");
         loginPD.show();
@@ -278,9 +280,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
-
-//                                                        //創建user的子collection
-//                                                        createDefaultUserCollection();
 
                                                         Log.e("add new user" , "success");
                                                         finish();
@@ -371,9 +370,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                             @Override
                                                             public void onSuccess(Void aVoid) {
 
-//                                                                //創建user的子collection
-//                                                                createDefaultUserCollection();
-
                                                                 Log.e("add new user" , "success");
                                                                 finish();
                                                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -414,19 +410,4 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             callbackManager.onActivityResult(requestCode , resultCode , data);
         }
     }
-
-//    //產生預設的user子collection
-//    private void createDefaultUserCollection(){
-//
-//        //create Random_Friends
-//        Map<String, Object> update = new HashMap<>();
-//        update.put("remark", "this is a base document , do not remove");
-//        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends").document("base_doc")
-//                .set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                Log.e("add collection" , "success");
-//            }
-//        });
-//    }
 }

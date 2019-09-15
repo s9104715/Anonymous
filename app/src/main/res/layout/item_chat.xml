@@ -13,24 +13,22 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/other_selfie"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/default_selfie"
         app:civ_border_width="1dp"
         app:civ_border_color="#AAAAAA"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_margin="5dp"
-        android:layout_marginBottom="5dp"/>
+        android:layout_margin="5dp" />
 
     <android.support.v7.widget.CardView
         android:id="@+id/other_line"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="@id/other_selfie"
-        app:layout_constraintBottom_toBottomOf="@id/other_selfie"
         app:layout_constraintLeft_toRightOf="@id/other_selfie"
+        android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
         app:cardCornerRadius="12dp"
         app:cardBackgroundColor="@color/colorPrimary">
@@ -51,29 +49,44 @@
         android:text="11:00"
         app:layout_constraintTop_toBottomOf="@id/other_line"
         app:layout_constraintLeft_toLeftOf="@id/other_line"
-        android:layout_marginTop="5dp"
         android:layout_marginLeft="5dp"/>
+
+    <ImageView
+        android:id="@+id/other_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/other_selfie"
+        app:layout_constraintLeft_toRightOf="@id/other_selfie"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp" />
+
+    <TextView
+        android:id="@+id/other_img_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="11:00"
+        app:layout_constraintTop_toBottomOf="@id/other_img"
+        app:layout_constraintLeft_toLeftOf="@id/other_img"
+        android:visibility="invisible"/>
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/my_selfie"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:src="@drawable/default_selfie"
         app:civ_border_width="1dp"
         app:civ_border_color="#AAAAAA"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_margin="5dp"
-        android:layout_marginBottom="5dp"/>
+        android:layout_margin="5dp" />
 
     <android.support.v7.widget.CardView
         android:id="@+id/my_line"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="@id/other_selfie"
-        app:layout_constraintBottom_toBottomOf="@id/other_selfie"
         app:layout_constraintRight_toLeftOf="@id/my_selfie"
+        android:layout_marginTop="5dp"
         android:layout_marginRight="10dp"
         app:cardCornerRadius="12dp"
         app:cardBackgroundColor="@color/colorPrimary">
@@ -94,7 +107,24 @@
         android:text="11:00"
         app:layout_constraintTop_toBottomOf="@id/my_line"
         app:layout_constraintRight_toRightOf="@id/my_line"
-        android:layout_marginTop="5dp"
         android:layout_marginRight="5dp"/>
+
+    <ImageView
+        android:id="@+id/my_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/other_selfie"
+        app:layout_constraintRight_toLeftOf="@id/my_selfie"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"/>
+
+    <TextView
+        android:id="@+id/my_img_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="11:00"
+        app:layout_constraintTop_toBottomOf="@id/my_img"
+        app:layout_constraintRight_toRightOf="@id/my_img"
+        android:visibility="invisible"/>
 
 </android.support.constraint.ConstraintLayout>

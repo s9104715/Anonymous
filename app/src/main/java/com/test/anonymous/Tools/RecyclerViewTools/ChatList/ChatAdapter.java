@@ -1,6 +1,11 @@
 package com.test.anonymous.Tools.RecyclerViewTools.ChatList;
 
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.CardView;
@@ -8,13 +13,22 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.MainActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.TextProcessor;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -43,12 +57,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
         private CircleImageView otherSelfie;
         private CardView otherLine;
         private TextView otherText;
-        private TextView otherTime;
+        private ImageView otherImg;
+        private TextView otherTime , otherImgTime;
         //自己的對話
         private CircleImageView mySelfie;
         private CardView myLine;
         private TextView myText;
-        private TextView myTime;
+        private ImageView myImg;
+        private TextView myTime , myImgTime;
 
         private BaseViewHolder(View itemView , final OnItemClickListener listener) {
             super(itemView);
@@ -57,14 +73,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
             otherSelfie = itemView.findViewById(R.id.other_selfie);
             otherLine = itemView.findViewById(R.id.other_line);
             otherText = itemView.findViewById(R.id.other_text);
+            otherImg = itemView.findViewById(R.id.other_img);
+            otherImgTime = itemView.findViewById(R.id.other_img_time);
             otherTime = itemView.findViewById(R.id.other_time);
             mySelfie = itemView.findViewById(R.id.my_selfie);
             myLine = itemView.findViewById(R.id.my_line);
             myText = itemView.findViewById(R.id.my_text);
+            myImg = itemView.findViewById(R.id.my_img);
+            myImgTime = itemView.findViewById(R.id.my_img_time);
             myTime = itemView.findViewById(R.id.my_time);
 
             //監聽器設置
-            itemView.setOnClickListener(new View.OnClickListener() {
+            View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (listener != null) {
@@ -74,14 +94,17 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                         }
                     }
                 }
-            });
+            };
+//            otherSelfie.setOnClickListener(onClickListener);
+            otherImg.setOnClickListener(onClickListener);
+//            mySelfie.setOnClickListener(onClickListener);
+            myImg.setOnClickListener(onClickListener);
         }
     }
 
     public ChatAdapter(List<ItemChat> list) {
         this.list = list;
         auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
     }
 
     //Adapter載入order_item.xml方法
@@ -99,7 +122,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
         final ItemChat currentItem = list.get(position);
 
         if(currentItem.getUserUID().equals(auth.getCurrentUser().getUid())){//符合自己的帳號，因此判定為自己的對話
-
             //隱藏對方的物件
             holder.otherSelfie.setVisibility(View.INVISIBLE);
             holder.otherLine.setVisibility(View.INVISIBLE);
@@ -114,6 +136,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                     .into(holder.mySelfie);
             holder.myText.setText(new TextProcessor().textAutoWrap(currentItem.getText() , 16));
             holder.myTime.setText(currentItem.getTime());
+            if(currentItem.isImg()){
+                //載入圖片
+                //載入圖片
+                holder.myImg.getLayoutParams().width = 2*(MainActivity.WINDOW_WIDTH /3);
+                Glide.with(holder.myImg.getContext())
+                        .load(currentItem.getImgUrl())
+                        .into(holder.myImg);
+                holder.myImgTime.setText(currentItem.getTime());
+                holder.myImgTime.setVisibility(View.VISIBLE);
+                holder.myLine.setVisibility(View.INVISIBLE);
+                holder.myTime.setVisibility(View.INVISIBLE);
+            }
         }else {
 
             //隱藏自己的物件
@@ -130,6 +164,17 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                     .into(holder.otherSelfie);
             holder.otherText.setText(new TextProcessor().textAutoWrap(currentItem.getText() , 16));
             holder.otherTime.setText(currentItem.getTime());
+            if(currentItem.isImg()){
+                //載入圖片
+                holder.otherImg.getLayoutParams().width = 2*(MainActivity.WINDOW_WIDTH /3);
+                Glide.with(holder.otherImg.getContext())
+                        .load(currentItem.getImgUrl())
+                        .into(holder.otherImg);
+                holder.otherImgTime.setText(currentItem.getTime());
+                holder.otherImgTime.setVisibility(View.VISIBLE);
+                holder.otherLine.setVisibility(View.INVISIBLE);
+                holder.otherTime.setVisibility(View.INVISIBLE);
+            }
         }
     }
 

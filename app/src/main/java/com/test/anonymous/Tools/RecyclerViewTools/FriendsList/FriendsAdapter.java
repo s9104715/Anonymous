@@ -79,7 +79,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
                 .centerCrop()
                 .into(baseViewHolder.selfie);//取得大頭貼
         baseViewHolder.nameTV.setText(currentItem.getName());
-        baseViewHolder.lastLineTV.setText(currentItem.getLastLine());
+        if(!currentItem.getLastLine().equals("")){
+            baseViewHolder.lastLineTV.setText(currentItem.getLastLine());
+        }else {
+            baseViewHolder.lastLineTV.setText("(照片)");
+        }
         if(currentItem.getUnreadLineNum() > 0){
             baseViewHolder.unreadLineNumTV.setText(String.valueOf(currentItem.getUnreadLineNum()));
             baseViewHolder.unreadLineNum.setVisibility(View.VISIBLE);

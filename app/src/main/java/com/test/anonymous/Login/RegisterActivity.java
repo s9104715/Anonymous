@@ -162,6 +162,8 @@ public class RegisterActivity  extends AppCompatActivity implements View.OnClick
         registPD = new ProgressDialog(RegisterActivity.this);
         registPD.setTitle("註冊帳號");
         registPD.setMessage("註冊中.....");
+        registPD.setCancelable(false);
+        registPD.setCanceledOnTouchOutside(false);
         registPD.show();
     }
 

@@ -3,40 +3,57 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <RelativeLayout
-        android:id="@+id/male_bnt"
+        android:id="@+id/camera_bnt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="20dp"
-        android:onClick="maleOnClick"
+        android:onClick="CameraOnClick"
         android:padding="5dp">
+
+        <ImageView
+            android:id="@+id/camera_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/send_pic_camera"
+            android:layout_marginLeft="20dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="男"
+            android:text="相機"
             android:textSize="18dp"
-            android:layout_marginLeft="20dp"/>
+            android:layout_toRightOf="@id/camera_pic"
+            android:layout_marginLeft="10dp"/>
 
     </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/female_btn"
+        android:id="@+id/gallery_bnt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/male_bnt"
-        android:onClick="femaleOnClick"
-        android:padding="5dp">
+        app:layout_constraintTop_toBottomOf="@id/camera_bnt"
+        android:onClick="GalleryOnClick"
+        android:padding="5dp"
+        android:layout_marginTop="5dp">
+
+        <ImageView
+            android:id="@+id/gallery_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/send_pic_gallery"
+            android:layout_marginLeft="20dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="女"
+            android:text="選擇相片"
             android:textSize="18dp"
-            android:layout_marginLeft="20dp"/>
+            android:layout_toRightOf="@id/gallery_pic"
+            android:layout_marginLeft="10dp"/>
 
     </RelativeLayout>
 
@@ -44,7 +61,7 @@
         android:id="@+id/useless"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
-        app:layout_constraintTop_toBottomOf="@id/female_btn"
+        app:layout_constraintTop_toBottomOf="@id/gallery_bnt"
         app:layout_constraintLeft_toLeftOf="parent">
 
     </RelativeLayout>
