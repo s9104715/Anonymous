@@ -1,6 +1,5 @@
 package com.test.anonymous;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,22 +8,24 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
-import com.test.anonymous.Tools.TextProcessor;
-import java.util.ArrayList;
-import java.util.List;
+import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsComparator;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import cc.cloudist.acplibrary.ACProgressConstant;
 import cc.cloudist.acplibrary.ACProgressFlower;
 
@@ -82,43 +83,47 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         friends = new ArrayList<>();
         //搜尋Random_Friends
         firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                .orderBy("lastTime" , Query.Direction.DESCENDING)
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(final QuerySnapshot queryDocumentSnapshots) {
-                for (final DocumentSnapshot friendsDocumentSnapshot : queryDocumentSnapshots){
-                    //透過查詢到的chatRoomID再到RandomChatRoom找尋lastLine
-                    firestore.collection("RandomChatRoom").document(friendsDocumentSnapshot.getString("chatRoomID")).get()
-                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(final DocumentSnapshot chatRoomDocumentSnapshot) {
-                                    //找尋最後一筆對話
-                                    final int lineNum= chatRoomDocumentSnapshot.get("lineNum", Integer.class);
-                                    chatRoomDocumentSnapshot.getReference().collection("conversation").document(String.valueOf(( lineNum -1)))
-                                            .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onSuccess(final DocumentSnapshot conversationDocumentSnapshot) {
-                                            //Random_Friends裡的文件id即為朋友UID,再帶入user尋找資料
-                                            firestore.collection("User").document(friendsDocumentSnapshot.getId()).get()
-                                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                                        @Override
-                                                        public void onSuccess(DocumentSnapshot userDocumentSnapshot) {
-                                                            friends.add(new ItemFriends(friendsDocumentSnapshot.getId() ,
-                                                                                                            userDocumentSnapshot.getString("selfiePath") ,
-                                                                                                            userDocumentSnapshot.getString("name") ,
-                                                                                                            friendsDocumentSnapshot.getString("chatRoomID") ,
-                                                                                                            new TextProcessor().textFormat(conversationDocumentSnapshot.getString("text") , 14) ,
-                                                                                                           lineNum - friendsDocumentSnapshot.get("readLine" , Integer.class)));
-                                                            //載入完畢
-                                                            if(friends.size() == queryDocumentSnapshots.size()){
+                if(queryDocumentSnapshots.isEmpty()){
+                    //no friends
+                    loadingPD.dismiss();
+                }else {
+                    for (final DocumentSnapshot friendsDocumentSnapshot : queryDocumentSnapshots) {
+                        final String friendUID = friendsDocumentSnapshot.getId();
+                        final String chatRoomID = friendsDocumentSnapshot.getString("chatRoomID");
+                        final String lastLine = friendsDocumentSnapshot.getString("lastLine");
+                        final Timestamp lastTime = friendsDocumentSnapshot.get("lastTime" , Timestamp.class);
+                        final int readLine = friendsDocumentSnapshot.get("readLine" , Integer.TYPE);
+                        //透過查詢到的chatRoomID再到RandomChatRoom找尋lastLine
+                        firestore.collection("RandomChatRoom").document(friendsDocumentSnapshot.getString("chatRoomID")).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot chatRoomDocumentSnapshot) {
+                                        final int lineNum= chatRoomDocumentSnapshot.get("lineNum", Integer.class);
+                                        firestore.collection("User").document(friendUID).get()
+                                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(DocumentSnapshot userDocumentSnapshot) {
+                                                        friends.add(new ItemFriends(friendUID ,
+                                                                userDocumentSnapshot.getString("selfiePath") ,
+                                                                userDocumentSnapshot.getString("name") ,
+                                                                chatRoomID ,
+                                                                lastLine ,
+                                                                lastTime ,
+                                                                (lineNum - readLine)));
+                                                        Collections.sort(friends , new ItemFriendsComparator());//sort with lastTime
+                                                        if(friends.size() == queryDocumentSnapshots.size()){
                                                                 setupRecyclerView();
                                                                 loadingPD.dismiss();
-                                                            }
                                                         }
-                                                    });
-                                        }
-                                    });
-                                }
-                            });
+                                                    }
+                                                });
+                                    }
+                                });
+                    }
                 }
             }
         });
@@ -128,7 +133,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
 
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getContext());
-        friendsAdapter = new FriendsAdapter(friends );
+        friendsAdapter = new FriendsAdapter(friends);
         list.setLayoutManager(layoutManager);
         list.setAdapter(friendsAdapter);
 

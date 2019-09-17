@@ -46,6 +46,16 @@
             android:layout_marginTop="5dp"
             android:layout_marginLeft="20dp"/>
 
+        <TextView
+            android:id="@+id/last_time_TV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="11:00"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/last_line_TV"
+            android:layout_alignBottom="@id/last_line_TV"
+            android:layout_marginRight="10dp"/>
+
     </RelativeLayout>
 
     <RelativeLayout

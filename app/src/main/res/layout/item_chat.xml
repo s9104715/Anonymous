@@ -46,10 +46,11 @@
         android:id="@+id/other_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="11:00"
+        android:text="上午11:00"
         app:layout_constraintTop_toBottomOf="@id/other_line"
         app:layout_constraintLeft_toLeftOf="@id/other_line"
-        android:layout_marginLeft="5dp"/>
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="2dp"/>
 
     <ImageView
         android:id="@+id/other_img"
@@ -64,10 +65,11 @@
         android:id="@+id/other_img_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="11:00"
+        android:text="上午11:00"
         app:layout_constraintTop_toBottomOf="@id/other_img"
         app:layout_constraintLeft_toLeftOf="@id/other_img"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        android:layout_marginTop="2dp"/>
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/my_selfie"
@@ -104,10 +106,11 @@
         android:id="@+id/my_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="11:00"
+        android:text="上午11:00"
         app:layout_constraintTop_toBottomOf="@id/my_line"
         app:layout_constraintRight_toRightOf="@id/my_line"
-        android:layout_marginRight="5dp"/>
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="2dp"/>
 
     <ImageView
         android:id="@+id/my_img"
@@ -122,9 +125,10 @@
         android:id="@+id/my_img_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="11:00"
+        android:text="上午11:00"
         app:layout_constraintTop_toBottomOf="@id/my_img"
         app:layout_constraintRight_toRightOf="@id/my_img"
-        android:visibility="invisible"/>
+        android:visibility="invisible"
+        android:layout_marginTop="2dp"/>
 
 </android.support.constraint.ConstraintLayout>

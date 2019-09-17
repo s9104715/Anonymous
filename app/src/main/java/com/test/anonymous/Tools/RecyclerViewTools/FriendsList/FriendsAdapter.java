@@ -8,8 +8,10 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.MyTime;
 
 import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -33,7 +35,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
     public static class BaseViewHolder extends RecyclerView.ViewHolder {
 
         private CircleImageView selfie;
-        private TextView nameTV , lastLineTV , unreadLineNumTV;
+        private TextView nameTV , lastLineTV , unreadLineNumTV , lastTimeTV;
         private RelativeLayout unreadLineNum;
 
         private BaseViewHolder(View itemView , final OnItemClickListener listener) {
@@ -42,6 +44,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
             selfie = itemView.findViewById(R.id.selfie);
             nameTV = itemView.findViewById(R.id.name_TV);
             lastLineTV = itemView.findViewById(R.id.last_line_TV);
+            lastTimeTV = itemView.findViewById(R.id.last_time_TV);
             unreadLineNum = itemView.findViewById(R.id.unRead_line_num);
             unreadLineNumTV = itemView.findViewById(R.id.unRead_line_num_TV);
 
@@ -79,11 +82,8 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
                 .centerCrop()
                 .into(baseViewHolder.selfie);//取得大頭貼
         baseViewHolder.nameTV.setText(currentItem.getName());
-        if(!currentItem.getLastLine().equals("")){
-            baseViewHolder.lastLineTV.setText(currentItem.getLastLine());
-        }else {
-            baseViewHolder.lastLineTV.setText("(照片)");
-        }
+        baseViewHolder.lastLineTV.setText(currentItem.getLastLine());
+        baseViewHolder.lastTimeTV.setText(new MyTime().getFormatTime(currentItem.getLastTime(), "a hh:mm"));
         if(currentItem.getUnreadLineNum() > 0){
             baseViewHolder.unreadLineNumTV.setText(String.valueOf(currentItem.getUnreadLineNum()));
             baseViewHolder.unreadLineNum.setVisibility(View.VISIBLE);

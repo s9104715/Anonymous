@@ -1,5 +1,7 @@
 package com.test.anonymous.Tools.RecyclerViewTools.ChatList;
 
+import com.google.firebase.Timestamp;
+
 public class ItemChat {
 
     private int index;
@@ -7,14 +9,14 @@ public class ItemChat {
     private String mySelfiePath;
     private String otherSelfiePath;
     private String text;
-    private String time;
+    private Timestamp time;
     private String imgUrl;
     private boolean isImg;
 
     public ItemChat(){
     }
     //for text
-    public ItemChat(int index, String userUID, String mySelfiePath, String otherSelfiePath, String text, String time) {
+    public ItemChat(int index, String userUID, String mySelfiePath, String otherSelfiePath, String text, Timestamp time) {
         this.index = index;
         this.userUID = userUID;
         this.mySelfiePath = mySelfiePath;
@@ -24,7 +26,7 @@ public class ItemChat {
         this.isImg = false;
     }
     //for img
-    public ItemChat(int index, String userUID, String mySelfiePath, String otherSelfiePath, String imgUrl, String time, boolean isImg) {
+    public ItemChat(int index, String userUID, String mySelfiePath, String otherSelfiePath, String imgUrl, Timestamp time, boolean isImg) {
         this.index = index;
         this.userUID = userUID;
         this.mySelfiePath = mySelfiePath;
@@ -47,7 +49,7 @@ public class ItemChat {
         return text;
     }
 
-    public String getTime() {
+    public Timestamp getTime() {
         return time;
     }
 

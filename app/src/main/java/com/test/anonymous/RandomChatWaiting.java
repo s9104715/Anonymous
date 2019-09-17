@@ -12,14 +12,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.Task;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -148,21 +152,22 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                         .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
                             public void onSuccess(final DocumentSnapshot documentSnapshot) {
-
-                                Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
-                                intent.putExtra("chatRoomID" ,  documentSnapshot.getString("chatRoomID"))
+                                if(documentSnapshot.exists()){
+                                    Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
+                                    intent.putExtra("chatRoomID" ,  documentSnapshot.getString("chatRoomID"))
                                             .putExtra("myUID" , auth.getCurrentUser().getUid())
                                             .putExtra("otherUID" , matcherUID);
-                                startActivity(intent);
-                                finish();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(), "尋找成功", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                                countDownTask.disableTask();
-                                intoChatRoomTask.disableTask();
+                                    startActivity(intent);
+                                    finish();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getApplicationContext(), "尋找成功", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    countDownTask.disableTask();
+                                    intoChatRoomTask.disableTask();
+                                }
                             }
                         });
            }
@@ -175,23 +180,64 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
     //有matcher的情況下找尋matcher
     private void findMatcher() {
 
-        firestore.collection("RandomMatch").orderBy("order" , Query.Direction.ASCENDING).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        final ArrayList<String> friendUIDList = new ArrayList<>();
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                for (final DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                    if (!documentSnapshot.getBoolean("contact")) {
-                        Map<String, Object> update = new HashMap<>();
-                        update.put("contact", true);
-                        update.put("contacter" , auth.getCurrentUser().getUid());
-                        firestore.collection("RandomMatch").document(documentSnapshot.getId())
-                                .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                    friendUIDList.add(documentSnapshot.getId());
+                }
+
+                firestore.collection("RandomMatch").orderBy("order" , Query.Direction.ASCENDING).get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                             @Override
-                            public void onSuccess(Void aVoid) {
-                                match(documentSnapshot.getId());
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                                for (final DocumentSnapshot matchDocumentSnapshot : queryDocumentSnapshots) {
+                                    if(friendUIDList.size() == 0){
+                                        if (!matchDocumentSnapshot.getBoolean("contact")) {
+                                            Map<String, Object> update = new HashMap<>();
+                                            update.put("contact", true);
+                                            update.put("contacter" , auth.getCurrentUser().getUid());
+                                            firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
+                                                    .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    match(matchDocumentSnapshot.getId());
+                                                }
+                                            });
+                                            break;
+                                        }
+                                    }else {
+                                        boolean isFriend = false;
+                                        for(String friendUID : friendUIDList){
+                                            if(friendUID.equals(matchDocumentSnapshot.getId())){
+                                                isFriend = true;
+                                                break;
+                                            }
+                                        }
+                                        if(!isFriend){
+                                            if (!matchDocumentSnapshot.getBoolean("contact")) {
+                                                Map<String, Object> update = new HashMap<>();
+                                                update.put("contact", true);
+                                                update.put("contacter" , auth.getCurrentUser().getUid());
+                                                firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
+                                                        .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        match(matchDocumentSnapshot.getId());
+                                                    }
+                                                });
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
                         });
-                    }
-                }
             }
         });
     }
@@ -216,12 +262,15 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
 
     private void match(final String uid){
        if(!getIntent().getExtras().getBoolean("hasMatcher")){
-
+            //is Matcher
            final String chatRoomID = new RandomCode().generateCode(8);//聊天室id
+           final Timestamp lastTime = new MyTime().getCurrentTime();//last time
            //更新User中的Random_Friends朋友名單(Matcher)
            Map<String, Object> update = new HashMap<>();
            update.put("chatRoomID", chatRoomID);
            update.put("readLine" , 0);//已讀取句數
+           update.put("lastTime" , lastTime);
+           update.put("lastLine" , "");
            firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
                    .document(uid).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                @Override
@@ -231,6 +280,8 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                    Map<String, Object> update = new HashMap<>();
                    update.put("chatRoomID", chatRoomID);
                    update.put("readLine" , 0);//已讀取句數
+                   update.put("lastTime" , lastTime);
+                   update.put("lastLine" , "");
                    firestore.collection("User").document(uid).collection("Random_Friends")
                            .document(auth.getCurrentUser().getUid()).set(update)
                            .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -242,6 +293,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                }
            });
        }else {
+           //is Finder
            buildIntoChatRoomTask(uid);
            intoChatRoomTask.activateTask(0 , 1000);
        }

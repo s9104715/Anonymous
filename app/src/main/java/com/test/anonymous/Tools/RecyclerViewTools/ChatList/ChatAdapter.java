@@ -18,11 +18,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.MainActivity;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.TextProcessor;
 
 import java.io.InputStream;
@@ -135,7 +137,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                     .centerCrop()
                     .into(holder.mySelfie);
             holder.myText.setText(new TextProcessor().textAutoWrap(currentItem.getText() , 16));
-            holder.myTime.setText(currentItem.getTime());
+            holder.myTime.setText(new MyTime().getFormatTime(currentItem.getTime() , "a hh:mm"));
             if(currentItem.isImg()){
                 //載入圖片
                 //載入圖片
@@ -143,7 +145,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                 Glide.with(holder.myImg.getContext())
                         .load(currentItem.getImgUrl())
                         .into(holder.myImg);
-                holder.myImgTime.setText(currentItem.getTime());
+                holder.myImgTime.setText(new MyTime().getFormatTime(currentItem.getTime() , "a hh:mm"));
                 holder.myImgTime.setVisibility(View.VISIBLE);
                 holder.myLine.setVisibility(View.INVISIBLE);
                 holder.myTime.setVisibility(View.INVISIBLE);
@@ -163,14 +165,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
                     .centerCrop()
                     .into(holder.otherSelfie);
             holder.otherText.setText(new TextProcessor().textAutoWrap(currentItem.getText() , 16));
-            holder.otherTime.setText(currentItem.getTime());
+            holder.otherTime.setText(new MyTime().getFormatTime(currentItem.getTime() , "a hh:mm"));
             if(currentItem.isImg()){
                 //載入圖片
                 holder.otherImg.getLayoutParams().width = 2*(MainActivity.WINDOW_WIDTH /3);
                 Glide.with(holder.otherImg.getContext())
                         .load(currentItem.getImgUrl())
                         .into(holder.otherImg);
-                holder.otherImgTime.setText(currentItem.getTime());
+                holder.otherImgTime.setText(new MyTime().getFormatTime(currentItem.getTime() , "a hh:mm"));
                 holder.otherImgTime.setVisibility(View.VISIBLE);
                 holder.otherLine.setVisibility(View.INVISIBLE);
                 holder.otherTime.setVisibility(View.INVISIBLE);
