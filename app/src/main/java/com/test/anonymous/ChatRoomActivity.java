@@ -55,7 +55,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
 
     //send pic view
     private CardView sendPicView;
-    private RelativeLayout cameraBtn , galleryBtn , gifBtn;
+    private RelativeLayout cameraBtn , galleryBtn;
 
     private String chatRoomID;
     private String mySelfiePath;
@@ -89,13 +89,11 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         sendPicView = findViewById(R.id.send_pic_view);
         cameraBtn = findViewById(R.id.camera_bnt);
         galleryBtn = findViewById(R.id.gallery_bnt);
-        gifBtn = findViewById(R.id.gif_bnt);
 
         chatBtn.setOnClickListener(this);
         sendPicBtn.setOnClickListener(this);
         cameraBtn.setOnClickListener(this);
         galleryBtn.setOnClickListener(this);
-        gifBtn.setOnClickListener(this);
 
         //firebase初始化
         auth = FirebaseAuth.getInstance();
@@ -104,7 +102,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
 
         setupTopToolBar();
         loadMsg();
-        buildMsgSonarTask();;
+        buildMsgSonarTask();
         msgSonarTask.activateTask(1000 , 1000);
     }
 
@@ -123,17 +121,13 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
             case R.id.gallery_bnt:
                 galleryOnClick();
                 break;
-            case R.id.gif_bnt:
-
-                break;
-
         }
     }
 
     @Override
-    public void onBackPressed() {
+    public void finish() {
         msgSonarTask.disableTask();
-        super.onBackPressed();
+        super.finish();
     }
 
     public void setupTopToolBar(){
@@ -213,7 +207,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         list.getRecycledViewPool().setMaxRecycledViews(0 ,0);//防止丟失數據
         list.scrollToPosition(chatList.size()-1);//自動滾動到底部
         buildListScrollToBotTask();
-        listScrollToBotTask.activateTask(2000 , 1000);
+        listScrollToBotTask.activateTask(3000 , 1000);
 
         chatAdapter.setOnItemClickListener(new ChatAdapter.OnItemClickListener() {
             @Override
@@ -371,6 +365,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         listScrollToBotTask = new Task(new Timer(), new TimerTask() {
             @Override
             public void run() {
+                Log.e("scrollList" , "success");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -422,9 +417,6 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_REQUEST);
     }
 
-    private void gifOnClick(){
-
-    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -505,4 +497,3 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 }
-

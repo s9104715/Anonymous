@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.squareup.picasso.Picasso;
 
 public class BrowseImgActivity extends AppCompatActivity {
@@ -22,11 +23,10 @@ public class BrowseImgActivity extends AppCompatActivity {
     }
 
     private void loadImg(){
-        Picasso.get()
-                .load( getIntent().getExtras().getString("picUri"))
-                //圖片使用最低分辨率,降低使用空間大小
-                .fit()
+        Glide.with(this)
+                .load(getIntent().getExtras().get("picUri"))
                 .centerCrop()
+                .fitCenter()
                 .into(img);
     }
 }

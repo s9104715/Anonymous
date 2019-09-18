@@ -8,11 +8,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.TaskExecutors;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -22,10 +24,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsComparator;
+import com.test.anonymous.Tools.Task;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import cc.cloudist.acplibrary.ACProgressConstant;
 import cc.cloudist.acplibrary.ACProgressFlower;
 
@@ -38,6 +44,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private ACProgressFlower loadingPD;
 
     private Button chatBtn;
+
+    private Task msgSonarTask;
 
     //firestore
     private FirebaseAuth auth;
@@ -71,8 +79,16 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     //進入此頁面都會呼叫此function
     @Override
     public void onResume() {
-        loadFriends();
         super.onResume();
+        loadFriends();
+        buildMsgSonarTask();
+        msgSonarTask.activateTask(5000 , 5000);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        msgSonarTask.disableTask();
     }
 
     //載入朋友清單
@@ -196,6 +212,73 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                     }
                 }
                startActivity(intent);
+            }
+        });
+    }
+
+    private void buildMsgSonarTask(){
+        msgSonarTask = new Task(new Timer(), new TimerTask() {
+            @Override
+            public void run() {
+                Log.e("MsgSonarTask()" , "isRunning");
+                final List<ItemFriends> newFriends = new ArrayList<>();
+                for(int i = 0 ; i < friends.size() ; i ++){
+                    firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                            .document(friends.get(i).getUserUID()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            newFriends.add(new ItemFriends(documentSnapshot.getId() ,
+                                    "" ,
+                                    "" ,
+                                    documentSnapshot.getString("chatRoomID") ,
+                                    "" ,
+                                    documentSnapshot.get("lastTime" , Timestamp.class) ,
+                                    0));
+                            Collections.sort(newFriends , new ItemFriendsComparator());
+                            if(newFriends.size() == friends.size()){
+                                //load complete
+                               //compare time between old and new
+                                for (int i = 0 ; i <friends.size() ; i ++){
+                                    if(!friends.get(i).getLastTime().equals(newFriends.get(i).getLastTime())){
+                                        //document has changed
+                                        final int finalI = i;
+                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                                .document(friends.get(i).getUserUID()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot friendsDocumentSnapshot) {
+                                                final String friendUID = friendsDocumentSnapshot.getId();
+                                                final String chatRoomID = friendsDocumentSnapshot.getString("chatRoomID");
+                                                final String lastLine = friendsDocumentSnapshot.getString("lastLine");
+                                                final Timestamp lastTime = friendsDocumentSnapshot.get("lastTime" , Timestamp.class);
+                                                final int readLine = friendsDocumentSnapshot.get("readLine" , Integer.TYPE);
+                                                firestore.collection("RandomChatRoom").document(friendsDocumentSnapshot.getString("chatRoomID")).get()
+                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                            @Override
+                                                            public void onSuccess(DocumentSnapshot chatRoomDocumentSnapshot) {
+                                                                final int lineNum= chatRoomDocumentSnapshot.get("lineNum", Integer.class);
+                                                                firestore.collection("User").document(friendUID).get()
+                                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                                            @Override
+                                                                            public void onSuccess(DocumentSnapshot userDocumentSnapshot) {
+                                                                                friendsAdapter.moveItemToTop(finalI , new ItemFriends(friendUID ,
+                                                                                        userDocumentSnapshot.getString("selfiePath") ,
+                                                                                        userDocumentSnapshot.getString("name") ,
+                                                                                        chatRoomID ,
+                                                                                        lastLine ,
+                                                                                        lastTime ,
+                                                                                        (lineNum - readLine)));
+                                                                            }
+                                                                        });
+                                                            }
+                                                        });
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
             }
         });
     }

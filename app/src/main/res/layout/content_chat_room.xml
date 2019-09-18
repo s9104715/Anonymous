@@ -132,27 +132,12 @@
                 android:padding="5dp"
                 android:layout_marginTop="5dp">
 
-            <ImageView
-                android:id="@+id/gif_pic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/send_pic_gif"
-                android:layout_marginLeft="10dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GIF"
-                android:textSize="18dp"
-                android:layout_toRightOf="@id/gif_pic"
-                android:layout_marginLeft="10dp"/>
-
             </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="10dp"
-                app:layout_constraintTop_toBottomOf="@id/gif_bnt"
+                app:layout_constraintTop_toBottomOf="@id/gallery_bnt"
                 app:layout_constraintLeft_toLeftOf="parent">
             </RelativeLayout>
 
@@ -160,8 +145,7 @@
                 android:layout_width="10dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintLeft_toRightOf="@id/gallery_bnt"
-                app:layout_constraintTop_toTopOf="@id/gallery_bnt"
-                >
+                app:layout_constraintTop_toTopOf="@id/gallery_bnt">
             </RelativeLayout>
 
         </android.support.constraint.ConstraintLayout>

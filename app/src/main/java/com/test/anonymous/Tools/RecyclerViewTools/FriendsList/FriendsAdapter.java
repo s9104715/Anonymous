@@ -13,6 +13,7 @@ import com.squareup.picasso.Picasso;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
 
+import java.util.Collections;
 import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -97,5 +98,12 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
 
     public void setOnItemClickListener(OnItemClickListener clickListener) {
         this.clickListener = clickListener;
+    }
+
+    public void moveItemToTop(int position , ItemFriends itemFriends){
+        list.remove(position);
+        notifyItemRemoved(position);
+        list.add(0 , itemFriends);
+        notifyItemInserted(0);
     }
 }
