@@ -1,20 +1,27 @@
 package com.test.anonymous;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.TaskExecutors;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -25,13 +32,13 @@ import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsComparator;
 import com.test.anonymous.Tools.Task;
-
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import cc.cloudist.acplibrary.ACProgressConstant;
 import cc.cloudist.acplibrary.ACProgressFlower;
 
@@ -43,9 +50,16 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private RecyclerView.LayoutManager layoutManager;
     private ACProgressFlower loadingPD;
 
-    private Button chatBtn;
+    public static Button chatBtn;
 
     private Task msgSonarTask;
+
+    //on long click option
+    public static View coverView;
+    private AlertDialog friendsOnLongClickAD;
+    public static ConstraintLayout editNameView;
+    private EditText editNameET;
+    private Button editNameBtn;
 
     //firestore
     private FirebaseAuth auth;
@@ -58,6 +72,10 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
 
         list = view.findViewById(R.id.list);
         chatBtn = view.findViewById(R.id.chat_btn);
+        coverView = view.findViewById(R.id.cover_view);
+        editNameView = view.findViewById(R.id.edit_name_view);
+        editNameET = view.findViewById(R.id.edit_name_ET);
+        editNameBtn = view.findViewById(R.id.edit_name_btn);
 
         chatBtn.setOnClickListener(this);
 
@@ -65,8 +83,18 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+
+            }
+        });
+
         return view;
     }
+
+
 
     @Override
     public void onClick(View view) {
@@ -110,6 +138,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                     for (final DocumentSnapshot friendsDocumentSnapshot : queryDocumentSnapshots) {
                         final String friendUID = friendsDocumentSnapshot.getId();
                         final String chatRoomID = friendsDocumentSnapshot.getString("chatRoomID");
+                        final String name = friendsDocumentSnapshot.getString("name");
                         final String lastLine = friendsDocumentSnapshot.getString("lastLine");
                         final Timestamp lastTime = friendsDocumentSnapshot.get("lastTime" , Timestamp.class);
                         final int readLine = friendsDocumentSnapshot.get("readLine" , Integer.TYPE);
@@ -125,7 +154,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                                                     public void onSuccess(DocumentSnapshot userDocumentSnapshot) {
                                                         friends.add(new ItemFriends(friendUID ,
                                                                 userDocumentSnapshot.getString("selfiePath") ,
-                                                                userDocumentSnapshot.getString("name") ,
+                                                                name ,
                                                                 chatRoomID ,
                                                                 lastLine ,
                                                                 lastTime ,
@@ -160,10 +189,139 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 Intent intent = new Intent(getContext() , ChatRoomActivity.class);
                 intent.putExtra("chatRoomID" , friends.get(position).getChatRoomID())
                             .putExtra("myUID" , auth.getCurrentUser().getUid())
-                            .putExtra("otherUID" , friends.get(position).getUserUID());
+                            .putExtra("otherUID" , friends.get(position).getUserUID())
+                            .putExtra("name" , friends.get(position).getName());
                 startActivity(intent);
             }
         });
+
+        friendsAdapter.setLongClickListener(new FriendsAdapter.OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(final int position) {
+                View view = getLayoutInflater().inflate(R.layout.dialog_friends_on_long_click_option , null);
+                AlertDialog.Builder ADBuilder = new AlertDialog.Builder(getContext())
+                        .setTitle(friends.get(position).getName())
+                        .setView(view);
+                friendsOnLongClickAD = ADBuilder.create();
+                friendsOnLongClickAD.show();
+                view.findViewById(R.id.edit_name_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        friendsOnLongClickAD.dismiss();
+                        editFriendName(friends.get(position) , position);
+                    }
+                });
+                view.findViewById(R.id.block_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                });
+                view.findViewById(R.id.leave_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                });
+            }
+        });
+    }
+
+    //修改朋友名
+    private void editFriendName(final ItemFriends itemFriends , final int position){
+
+        coverView.setVisibility(View.VISIBLE);
+        editNameView.setVisibility(View.VISIBLE);
+        Animation moveUp = AnimationUtils.loadAnimation(getContext() , R.anim.move_upward);
+        moveUp.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                chatBtn.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        editNameView.startAnimation(moveUp);
+        editNameET.setText(itemFriends.getName());
+        //outside view surround editNameBtn
+        coverView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //close editNameBtn
+                chatBtn.setVisibility(View.VISIBLE);
+                closeKeyboard();
+                Animation moveDown = AnimationUtils.loadAnimation(getContext() , R.anim.move_down);
+                moveDown.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        coverView.setVisibility(View.GONE);
+                        editNameView.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                editNameView.startAnimation(moveDown);
+            }
+        });
+
+        editNameBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!editNameET.getText().toString().equals(itemFriends.getName())){
+                    //DB
+                    Map<String , Object> update = new HashMap<>();
+                    update.put("name" , editNameET.getText().toString());
+                    firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                            .document(itemFriends.getUserUID()).update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            //change friends list
+                            itemFriends.setName(editNameET.getText().toString());
+                            friendsAdapter.updateItem(position , itemFriends);
+                        }
+                    });
+                }
+                closeKeyboard();
+                chatBtn.setVisibility(View.VISIBLE);
+                Animation moveDown = AnimationUtils.loadAnimation(getContext() , R.anim.move_down);
+                moveDown.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        coverView.setVisibility(View.GONE);
+                        editNameView.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                editNameView.startAnimation(moveDown);
+            }
+        });
+
+
     }
 
     public void showLoadingDialog(){
@@ -281,5 +439,13 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 }
             }
         });
+    }
+
+    private void closeKeyboard(){
+       if(getView() != null && getActivity()!=null){
+           final InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+           inputMethodManager.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+       }
+
     }
 }

@@ -24,9 +24,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
 
     //點擊效果
     private OnItemClickListener clickListener;
+    private OnItemLongClickListener longClickListener;
 
     public interface OnItemClickListener {
         void onItemClick(int position);
+    }
+
+    public interface OnItemLongClickListener{
+        void onItemLongClick(int position);
     }
 
     public FriendsAdapter(List<ItemFriends> list) {
@@ -39,7 +44,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
         private TextView nameTV , lastLineTV , unreadLineNumTV , lastTimeTV;
         private RelativeLayout unreadLineNum;
 
-        private BaseViewHolder(View itemView , final OnItemClickListener listener) {
+        private BaseViewHolder(View itemView , final OnItemClickListener listener , final OnItemLongClickListener longClickListener) {
             super(itemView);
 
             selfie = itemView.findViewById(R.id.selfie);
@@ -61,6 +66,18 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
                     }
                 }
             });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (longClickListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            longClickListener.onItemLongClick(position);
+                        }
+                    }
+                    return true;
+                }
+            });
         }
     }
 
@@ -68,7 +85,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
     @Override
     public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext() ).inflate( R.layout.item_friends, viewGroup, false);
-        viewHolder= new BaseViewHolder(view, clickListener);
+        viewHolder= new BaseViewHolder(view, clickListener , longClickListener);
         return viewHolder;
     }
 
@@ -100,10 +117,21 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
         this.clickListener = clickListener;
     }
 
+    public void setLongClickListener(OnItemLongClickListener longClickListener) {
+        this.longClickListener = longClickListener;
+    }
+    //監聽新訊息時所用
     public void moveItemToTop(int position , ItemFriends itemFriends){
         list.remove(position);
         notifyItemRemoved(position);
         list.add(0 , itemFriends);
         notifyItemInserted(0);
+    }
+    //更改朋友名字所用
+    public void updateItem(int position , ItemFriends itemFriends){
+        list.remove(position);
+        notifyItemRemoved(position);
+        list.add(position , itemFriends);
+        notifyItemInserted(position);
     }
 }

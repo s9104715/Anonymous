@@ -12,7 +12,7 @@
         android:id="@+id/main_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="58dp">
+        android:layout_marginBottom="56dp">
     </FrameLayout>
 
     <android.support.design.widget.BottomNavigationView

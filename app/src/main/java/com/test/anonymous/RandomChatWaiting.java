@@ -3,9 +3,12 @@ package com.test.anonymous;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -60,9 +63,9 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
         waitingBar = findViewById(R.id.waiting_bar);
         waitingTV = findViewById(R.id.waiting_TV);
         cancelBtn = findViewById(R.id.cancel_btn);
-        waitingBar.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move));
-        waitingTV.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move));
-        cancelBtn.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move));
+        waitingBar.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move_upward));
+        waitingTV.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move_upward));
+        cancelBtn.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move_upward));
 
         cancelBtn.setOnClickListener(this);
 
@@ -84,14 +87,19 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
     }
 
     @Override
+    public void onBackPressed() {
+        countDownTask.disableTask();
+        if(!getIntent().getExtras().getBoolean("hasMatcher")){
+            matchTask.disableTask();
+            deleteMatcher();
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.cancel_btn:
-                countDownTask.disableTask();
-                if(!getIntent().getExtras().getBoolean("hasMatcher")){
-                    matchTask.disableTask();
-                    deleteMatcher();
-                }
                 onBackPressed();
                 break;
         }
@@ -265,33 +273,48 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
             //is Matcher
            final String chatRoomID = new RandomCode().generateCode(8);//聊天室id
            final Timestamp lastTime = new MyTime().getCurrentTime();//last time
-           //更新User中的Random_Friends朋友名單(Matcher)
-           Map<String, Object> update = new HashMap<>();
-           update.put("chatRoomID", chatRoomID);
-           update.put("readLine" , 0);//已讀取句數
-           update.put("lastTime" , lastTime);
-           update.put("lastLine" , "");
-           firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
-                   .document(uid).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-               @Override
-               public void onSuccess(Void aVoid) {
 
-                   //更新User中的Random_Friends朋友名單(Matcher幫Finder更新)
-                   Map<String, Object> update = new HashMap<>();
-                   update.put("chatRoomID", chatRoomID);
-                   update.put("readLine" , 0);//已讀取句數
-                   update.put("lastTime" , lastTime);
-                   update.put("lastLine" , "");
-                   firestore.collection("User").document(uid).collection("Random_Friends")
-                           .document(auth.getCurrentUser().getUid()).set(update)
-                           .addOnSuccessListener(new OnSuccessListener<Void>() {
+           firestore.collection("User").document(uid).get()
+                   .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                       @Override
+                       public void onSuccess(DocumentSnapshot documentSnapshot) {
+                           //更新User中的Random_Friends朋友名單(Matcher)
+                           Map<String, Object> update = new HashMap<>();
+                           update.put("chatRoomID", chatRoomID);
+                           update.put("name" , documentSnapshot.getString("name"));
+                           update.put("readLine" , 0);//已讀取句數
+                           update.put("lastTime" , lastTime);
+                           update.put("lastLine" , "");
+                           firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                   .document(uid).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                                @Override
                                public void onSuccess(Void aVoid) {
-                                   createChatRoom(chatRoomID , auth.getCurrentUser().getUid() , uid);
+
+                                   firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
+                                           .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                               @Override
+                                               public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                   //更新User中的Random_Friends朋友名單(Matcher幫Finder更新)
+                                                   Map<String, Object> update = new HashMap<>();
+                                                   update.put("chatRoomID", chatRoomID);
+                                                   update.put("name" , documentSnapshot.getString("name"));
+                                                   update.put("readLine" , 0);//已讀取句數
+                                                   update.put("lastTime" , lastTime);
+                                                   update.put("lastLine" , "");
+                                                   firestore.collection("User").document(uid).collection("Random_Friends")
+                                                           .document(auth.getCurrentUser().getUid()).set(update)
+                                                           .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                               @Override
+                                                               public void onSuccess(Void aVoid) {
+                                                                   createChatRoom(chatRoomID , auth.getCurrentUser().getUid() , uid);
+                                                               }
+                                                           });
+                                               }
+                                           });
                                }
                            });
-               }
-           });
+                       }
+                   });
        }else {
            //is Finder
            buildIntoChatRoomTask(uid);

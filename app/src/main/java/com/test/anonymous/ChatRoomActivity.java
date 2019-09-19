@@ -56,6 +56,9 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     //send pic view
     private CardView sendPicView;
     private RelativeLayout cameraBtn , galleryBtn;
+    //cover view
+    private View mainCoverView;
+    private View botCoverView;
 
     private String chatRoomID;
     private String mySelfiePath;
@@ -89,6 +92,8 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         sendPicView = findViewById(R.id.send_pic_view);
         cameraBtn = findViewById(R.id.camera_bnt);
         galleryBtn = findViewById(R.id.gallery_bnt);
+        mainCoverView = findViewById(R.id.main_cover_view);
+        botCoverView = findViewById(R.id.bot_cover_view);
 
         chatBtn.setOnClickListener(this);
         sendPicBtn.setOnClickListener(this);
@@ -142,6 +147,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                 onBackPressed();
             }
         });
+        setTitle(getIntent().getExtras().getString("name"));//set title
     }
 
     private void loadMsg(){
@@ -160,7 +166,6 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                     @Override
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                                         otherSelfiePath = documentSnapshot.getString("selfiePath");
-                                        setTitle(documentSnapshot.getString("name"));//set title
                                         //載入對話
                                         chatList = new ArrayList<>();
                                         firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
@@ -207,7 +212,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         list.getRecycledViewPool().setMaxRecycledViews(0 ,0);//防止丟失數據
         list.scrollToPosition(chatList.size()-1);//自動滾動到底部
         buildListScrollToBotTask();
-        listScrollToBotTask.activateTask(3000 , 1000);
+        listScrollToBotTask.activateTask(2500 , 1000);
 
         chatAdapter.setOnItemClickListener(new ChatAdapter.OnItemClickListener() {
             @Override
@@ -380,8 +385,52 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     private void sendPic(){
         if(sendPicView.getVisibility() == View.INVISIBLE ){
             sendPicView.setVisibility(View.VISIBLE);
-            sendPicView.setAnimation(AnimationUtils.loadAnimation(this , R.anim.fade_in));
+            Animation fadeIn = AnimationUtils.loadAnimation(this , R.anim.fade_in);
+            fadeIn.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mainCoverView.setVisibility(View.VISIBLE);
+                    botCoverView.setVisibility(View.VISIBLE);
+                    View.OnClickListener clickListener = new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            mainCoverView.setVisibility(View.GONE);
+                            botCoverView.setVisibility(View.GONE);
+                            Animation fadeOut = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
+                            fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                                @Override
+                                public void onAnimationStart(Animation animation) {
+
+                                }
+                                @Override
+                                public void onAnimationEnd(Animation animation) {
+                                    sendPicView.setVisibility(View.INVISIBLE);
+                                }
+                                @Override
+                                public void onAnimationRepeat(Animation animation) {
+
+                                }
+                            });
+                            sendPicView.startAnimation(fadeOut);
+                        }
+                    };
+                    mainCoverView.setOnClickListener(clickListener);
+                    botCoverView.setOnClickListener(clickListener);
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            sendPicView.setAnimation(fadeIn);
         }else {
+            mainCoverView.setVisibility(View.GONE);
+            botCoverView.setVisibility(View.GONE);
             Animation fadeOut = AnimationUtils.loadAnimation(this , R.anim.fade_out);
             fadeOut.setAnimationListener(new Animation.AnimationListener() {
                 @Override

@@ -20,6 +20,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -79,7 +82,29 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        }else if (FragmentRandomChat.editNameView!=null && FragmentRandomChat.editNameView.getVisibility() == View.VISIBLE){
+            closeKeyboard();
+            FragmentRandomChat.chatBtn.setVisibility(View.VISIBLE);
+            Animation move = AnimationUtils.loadAnimation(this , R.anim.move_down);
+            move.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    FragmentRandomChat.coverView.setVisibility(View.GONE);
+                    FragmentRandomChat.editNameView.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            FragmentRandomChat.editNameView.startAnimation(move);
+        }else {
             super.onBackPressed();
         }
     }
@@ -322,6 +347,14 @@ public class MainActivity extends AppCompatActivity
     public void setupConstantFields(){
         WINDOW_WIDTH = getWindowManager().getDefaultDisplay().getWidth();
         WINDOW_HEIGHT = getWindowManager().getDefaultDisplay().getHeight();
+    }
+
+    private void closeKeyboard(){
+        View view = this.getCurrentFocus();
+        if(view!=null){
+            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken() , 0);
+        }
     }
 
  //產生fb登入所需的金鑰

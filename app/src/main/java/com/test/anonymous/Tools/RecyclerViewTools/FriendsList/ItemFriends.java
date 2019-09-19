@@ -52,4 +52,8 @@ public class ItemFriends {
     public int getUnreadLineNum() {
         return unreadLineNum;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
