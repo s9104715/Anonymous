@@ -1,5 +1,6 @@
 package com.test.anonymous;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -12,6 +13,8 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -135,6 +138,134 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         super.finish();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.chat_room_option_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.block:
+                AlertDialog blockAD = new AlertDialog.Builder(this)
+                        .setTitle("封鎖好友")
+                        .setMessage(R.string.block_msg)
+                        .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                msgSonarTask.disableTask();
+                                firestore.collection("User").document(getIntent().getExtras().getString("otherUID")).get()
+                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(final DocumentSnapshot friendsDocumentSnapshot) {
+                                                //DB add block_list
+                                                Map<String , Object> update = new HashMap<>();
+                                                update.put("name" , friendsDocumentSnapshot.getString("name"));//get real name
+                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
+                                                        .document(friendsDocumentSnapshot.getId()).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        //DB delete Random_Friends
+                                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                                                .document(friendsDocumentSnapshot.getId()).delete();
+                                                        //DB chatRoom
+                                                        firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                                    @Override
+                                                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                                        if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                                                            //delete chatRoom
+                                                                            firestore.collection("RandomChatRoom").document(chatRoomID).delete()
+                                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                        @Override
+                                                                                        public void onSuccess(Void aVoid) {
+                                                                                            ChatRoomActivity.super.finish();
+                                                                                        }
+                                                                                    });
+                                                                        }else {
+                                                                            //update chatRoom
+                                                                            Map<String , Object> update = new HashMap<>();
+                                                                            update.put("userHasLeft" , true);
+                                                                            firestore.collection("RandomChatRoom").document(chatRoomID)
+                                                                                    .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                @Override
+                                                                                public void onSuccess(Void aVoid) {
+                                                                                    ChatRoomActivity.super.finish();
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                });
+                                                    }
+                                                });
+                                            }
+                                        });
+                            }
+                        })
+                        .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create();
+                blockAD.show();
+                break;
+            case R.id.leave:
+                AlertDialog leaveAD = new AlertDialog.Builder(this)
+                        .setTitle("刪除好友")
+                        .setMessage(R.string.leave_msg)
+                        .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                msgSonarTask.disableTask();
+                                //DB delete Random_Friends
+                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                        .document(getIntent().getExtras().getString("otherUID")).delete();
+                                //DB chatRoom
+                                firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                                    //delete chatRoom
+                                                    firestore.collection("RandomChatRoom").document(chatRoomID).delete()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    ChatRoomActivity.super.finish();
+                                                                }
+                                                            });
+                                                }else {
+                                                    //update chatRoom
+                                                    Map<String , Object> update = new HashMap<>();
+                                                    update.put("userHasLeft" , true);
+                                                    firestore.collection("RandomChatRoom").document(chatRoomID)
+                                                            .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        @Override
+                                                        public void onSuccess(Void aVoid) {
+                                                            ChatRoomActivity.super.finish();
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+                            }
+                        })
+                        .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create();
+                leaveAD.show();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public void setupTopToolBar(){
 
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.chat_room_toolbar);
@@ -147,7 +278,6 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                 onBackPressed();
             }
         });
-        setTitle(getIntent().getExtras().getString("name"));//set title
     }
 
     private void loadMsg(){
@@ -165,6 +295,12 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                     @Override
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        //set title
+                                        if(getIntent().getExtras().getString("name")!=null){
+                                            setTitle(getIntent().getExtras().getString("name"));
+                                        }else {
+                                            setTitle(documentSnapshot.getString("name"));
+                                        }
                                         otherSelfiePath = documentSnapshot.getString("selfiePath");
                                         //載入對話
                                         chatList = new ArrayList<>();
@@ -193,6 +329,19 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                                 true));
                                                     }
                                                 }
+                                                //userHasLeft
+                                                firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                            @Override
+                                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                                if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                                                    if(documentSnapshot.getBoolean("userHasLeft")){
+                                                                        inputET.setText("對方已離開聊天室");
+                                                                        inputET.setEnabled(false);
+                                                                    }
+                                                                }
+                                                            }
+                                                        });
                                                 setupRecyclerView();
                                                 updateReadLine();//更新已讀數
                                             }

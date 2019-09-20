@@ -7,6 +7,8 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -113,12 +115,12 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                 progress -= 1;
                 Log.e("progress" , ""+progress);
                 if(progress == 0){
-                    finish();
                     countDownTask.disableTask();
                     if(!getIntent().getExtras().getBoolean("hasMatcher")){
                         matchTask.disableTask();
                         deleteMatcher();
                     }
+                    finish();
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -140,9 +142,11 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                         .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                if(documentSnapshot.getBoolean("contact")){
-                                   match(documentSnapshot.getString("contacter"));
-                                   matchTask.disableTask();
+                                if(documentSnapshot.getBoolean("contact")!=null){
+                                    if(documentSnapshot.getBoolean("contact")){
+                                        match(documentSnapshot.getString("contacter"));
+                                        matchTask.disableTask();
+                                    }
                                 }
                             }
                         });
@@ -189,63 +193,86 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
     private void findMatcher() {
 
         final ArrayList<String> friendUIDList = new ArrayList<>();
+        final ArrayList<String> blockList = new ArrayList<>();
         firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-
+                //add friendUIDList
                 for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
                     friendUIDList.add(documentSnapshot.getId());
                 }
 
-                firestore.collection("RandomMatch").orderBy("order" , Query.Direction.ASCENDING).get()
-                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                            @Override
-                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
+                        .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        //add blockList
+                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                            blockList.add(documentSnapshot.getId());
+                        }
 
-                                for (final DocumentSnapshot matchDocumentSnapshot : queryDocumentSnapshots) {
-                                    if(friendUIDList.size() == 0){
-                                        if (!matchDocumentSnapshot.getBoolean("contact")) {
-                                            Map<String, Object> update = new HashMap<>();
-                                            update.put("contact", true);
-                                            update.put("contacter" , auth.getCurrentUser().getUid());
-                                            firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
-                                                    .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        firestore.collection("RandomMatch").orderBy("order" , Query.Direction.ASCENDING).get()
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                                        final boolean[] lock = {false};//媒合成功之後迴圈上鎖
+
+                                        for (final DocumentSnapshot matchDocumentSnapshot : queryDocumentSnapshots) {
+                                            firestore.collection("User").document(matchDocumentSnapshot.getId()).collection("Block_List")
+                                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                                 @Override
-                                                public void onSuccess(Void aVoid) {
-                                                    match(matchDocumentSnapshot.getId());
+                                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                                                    boolean isFriend = false;
+                                                    boolean isBlocked = false;
+
+                                                    for (DocumentSnapshot matcherDocumentSnapshot : queryDocumentSnapshots){
+                                                        if(matcherDocumentSnapshot.getId().equals(auth.getCurrentUser().getUid())){
+                                                            isBlocked = true;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    for(String friendUID : friendUIDList){
+                                                        if(friendUID.equals(matchDocumentSnapshot.getId())){
+                                                            isFriend = true;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    //my block list
+                                                    for(String blockID: blockList){
+                                                        if(blockID.equals(matchDocumentSnapshot.getId())){
+                                                            isBlocked = true;
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    if(!isFriend && !isBlocked && !lock[0]){
+                                                        if (!matchDocumentSnapshot.getBoolean("contact")) {
+                                                            Map<String, Object> update = new HashMap<>();
+                                                            update.put("contact", true);
+                                                            update.put("contacter" , auth.getCurrentUser().getUid());
+                                                            firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
+                                                                    .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    match(matchDocumentSnapshot.getId());
+                                                                }
+                                                            });
+                                                            lock[0] = true;
+                                                        }
+                                                    }
+
                                                 }
                                             });
-                                            break;
-                                        }
-                                    }else {
-                                        boolean isFriend = false;
-                                        for(String friendUID : friendUIDList){
-                                            if(friendUID.equals(matchDocumentSnapshot.getId())){
-                                                isFriend = true;
-                                                break;
-                                            }
-                                        }
-                                        if(!isFriend){
-                                            if (!matchDocumentSnapshot.getBoolean("contact")) {
-                                                Map<String, Object> update = new HashMap<>();
-                                                update.put("contact", true);
-                                                update.put("contacter" , auth.getCurrentUser().getUid());
-                                                firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
-                                                        .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        match(matchDocumentSnapshot.getId());
-                                                    }
-                                                });
-                                                break;
-                                            }
                                         }
                                     }
-                                }
-
-                            }
-                        });
+                                });
+                    }
+                });
             }
         });
     }

@@ -1,6 +1,7 @@
 package com.test.anonymous;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -82,14 +83,6 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         //firebase初始化
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
-
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-
-            }
-        });
 
         return view;
     }
@@ -208,19 +201,21 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                     @Override
                     public void onClick(View view) {
                         friendsOnLongClickAD.dismiss();
-                        editFriendName(friends.get(position) , position);
+                        editName(friends.get(position) , position);
                     }
                 });
                 view.findViewById(R.id.block_btn).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
+                        friendsOnLongClickAD.dismiss();
+                        block(friends.get(position) , position);
                     }
                 });
                 view.findViewById(R.id.leave_btn).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
+                        friendsOnLongClickAD.dismiss();
+                        leave(friends.get(position) , position);
                     }
                 });
             }
@@ -228,7 +223,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     }
 
     //修改朋友名
-    private void editFriendName(final ItemFriends itemFriends , final int position){
+    private void editName(final ItemFriends itemFriends , final int position){
 
         coverView.setVisibility(View.VISIBLE);
         editNameView.setVisibility(View.VISIBLE);
@@ -322,6 +317,105 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         });
 
 
+    }
+    //封鎖朋友
+    private void block(final ItemFriends itemFriends , final int position){
+
+        AlertDialog blockAD = new AlertDialog.Builder(getContext())
+                .setTitle("封鎖好友")
+                .setMessage(R.string.block_msg)
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        firestore.collection("User").document(itemFriends.getUserUID()).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(final DocumentSnapshot friendsDocumentSnapshot) {
+                                        //UI
+                                        friendsAdapter.removeItem(position);
+                                        //DB add block_list
+                                        Map<String , Object> update = new HashMap<>();
+                                        update.put("name" , friendsDocumentSnapshot.getString("name"));//get real name
+                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
+                                                .document(friendsDocumentSnapshot.getId()).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                //DB delete Random_Friends
+                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                                        .document(friendsDocumentSnapshot.getId()).delete();
+                                                //DB chatRoom
+                                                firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).get()
+                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                            @Override
+                                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                                if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                                                    //delete chatRoom
+                                                                    firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                                                }else {
+                                                                    //update chatRoom
+                                                                    Map<String , Object> update = new HashMap<>();
+                                                                    update.put("userHasLeft" , true);
+                                                                    firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID())
+                                                                            .update(update);
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        });
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+            blockAD.show();
+    }
+    //刪除朋友
+    private void leave(final ItemFriends itemFriends , final int position){
+
+        AlertDialog leaveAD = new AlertDialog.Builder(getContext())
+                .setTitle("刪除好友")
+                .setMessage(R.string.leave_msg)
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //UI
+                        friendsAdapter.removeItem(position);
+                        //DB delete Random_Friends
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                .document(itemFriends.getUserUID()).delete();
+                        //DB chatRoom
+                        firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                            //delete chatRoom
+                                            firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                        }else {
+                                            //update chatRoom
+                                            Map<String , Object> update = new HashMap<>();
+                                            update.put("userHasLeft" , true);
+                                            firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID())
+                                                    .update(update);
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        leaveAD.show();
     }
 
     public void showLoadingDialog(){

@@ -134,4 +134,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.BaseView
         list.add(position , itemFriends);
         notifyItemInserted(position);
     }
+    //封鎖、離開聊天室所用
+    public void removeItem(int position){
+        list.remove(position);
+        notifyItemRemoved(position);
+    }
 }
