@@ -40,7 +40,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.test.anonymous.Main.MainActivity;
+import com.test.anonymous.MainActivity;
 import com.test.anonymous.R;
 import java.util.HashMap;
 import java.util.Map;
