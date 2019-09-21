@@ -1,7 +1,9 @@
 package com.test.anonymous.Login;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -115,9 +117,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStart() {
         super.onStart();
         //如果已登入直接進入主頁
-        if(auth.getCurrentUser()!= null){
+        if(internetCheck()){
+            if(auth.getCurrentUser()!= null){
+                finish();
+                startActivity(new Intent(this , MainActivity.class));
+            }
+        }else {
             finish();
-            startActivity(new Intent(this , MainActivity.class));
+            startActivity(new Intent(this , InternetCheckActivity.class));
         }
     }
 
@@ -409,5 +416,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             showLoginDialog();
             callbackManager.onActivityResult(requestCode , resultCode , data);
         }
+    }
+
+    private boolean internetCheck(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getActiveNetworkInfo()!=null){
+             return connectivityManager.getActiveNetworkInfo().isConnected();
+        }
+        return false;
     }
 }
