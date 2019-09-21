@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main.FragmentRandomChat;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.Task;

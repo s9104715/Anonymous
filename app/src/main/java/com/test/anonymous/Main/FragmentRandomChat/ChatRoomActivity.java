@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main.FragmentRandomChat;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +30,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.test.anonymous.BrowseImgActivity;
+import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ChatAdapter;

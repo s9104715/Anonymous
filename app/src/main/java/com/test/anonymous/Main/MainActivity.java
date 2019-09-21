@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -35,7 +35,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.FragmentChatRoom;
+import com.test.anonymous.FragmentFriendsList;
+import com.test.anonymous.Main.FragmentRandomChat.FragmentRandomChat;
+import com.test.anonymous.FragmentSetting;
 import com.test.anonymous.Login.LoginActivity;
+import com.test.anonymous.R;
 
 import java.util.HashMap;
 import java.util.Map;

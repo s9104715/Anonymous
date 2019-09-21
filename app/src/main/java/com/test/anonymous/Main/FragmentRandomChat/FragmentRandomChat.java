@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main.FragmentRandomChat;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,6 +28,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.test.anonymous.R;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsComparator;
