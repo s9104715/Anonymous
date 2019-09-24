@@ -350,7 +350,17 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                                                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                                 if(documentSnapshot.getBoolean("userHasLeft")!=null){
                                                                     //delete chatRoom
-                                                                    firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                                                    firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).collection("conversation")
+                                                                            .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                                        @Override
+                                                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                                            for (DocumentSnapshot conversationDocumentSnapshot : queryDocumentSnapshots){
+                                                                                //delete conversation
+                                                                                conversationDocumentSnapshot.getReference().delete();
+                                                                            }
+                                                                            firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                                                        }
+                                                                    });
                                                                 }else {
                                                                     //update chatRoom
                                                                     Map<String , Object> update = new HashMap<>();
@@ -396,7 +406,17 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                                         if(documentSnapshot.getBoolean("userHasLeft")!=null){
                                             //delete chatRoom
-                                            firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                            firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).collection("conversation")
+                                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                    for (DocumentSnapshot conversationDocumentSnapshot : queryDocumentSnapshots){
+                                                        //delete conversation
+                                                        conversationDocumentSnapshot.getReference().delete();
+                                                    }
+                                                    firestore.collection("RandomChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                                }
+                                            });
                                         }else {
                                             //update chatRoom
                                             Map<String , Object> update = new HashMap<>();

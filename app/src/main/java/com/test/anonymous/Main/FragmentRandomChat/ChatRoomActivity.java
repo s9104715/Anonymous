@@ -58,7 +58,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
 
     //send pic view
     private CardView sendPicView;
-    private RelativeLayout cameraBtn , galleryBtn;
+    private RelativeLayout cameraBtn  , galleryBtn;
     //cover view
     private View mainCoverView;
     private View botCoverView;
@@ -76,7 +76,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     private File imgFile;
     private Uri imgUri;
     private final int CAMERA_REQUEST = 1888;
-    private final int GALLERY_REQUEST = 1889;
+    private final int GALLERY_REQUEST = 1890;
 
     //firestore
     private FirebaseAuth auth;
@@ -133,6 +133,32 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     }
 
     @Override
+    public void onBackPressed() {
+        if(sendPicView.getVisibility() == View.VISIBLE){
+            mainCoverView.setVisibility(View.GONE);
+            botCoverView.setVisibility(View.GONE);
+            Animation fadeOut = AnimationUtils.loadAnimation(this , R.anim.fade_out);
+            fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    sendPicView.setVisibility(View.INVISIBLE);
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            sendPicView.startAnimation(fadeOut);
+        }else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void finish() {
         msgSonarTask.disableTask();
         super.finish();
@@ -148,119 +174,10 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.block:
-                AlertDialog blockAD = new AlertDialog.Builder(this)
-                        .setTitle("封鎖好友")
-                        .setMessage(R.string.block_msg)
-                        .setPositiveButton("是", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                msgSonarTask.disableTask();
-                                firestore.collection("User").document(getIntent().getExtras().getString("otherUID")).get()
-                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onSuccess(final DocumentSnapshot friendsDocumentSnapshot) {
-                                                //DB add block_list
-                                                Map<String , Object> update = new HashMap<>();
-                                                update.put("name" , friendsDocumentSnapshot.getString("name"));//get real name
-                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
-                                                        .document(friendsDocumentSnapshot.getId()).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        //DB delete Random_Friends
-                                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
-                                                                .document(friendsDocumentSnapshot.getId()).delete();
-                                                        //DB chatRoom
-                                                        firestore.collection("RandomChatRoom").document(chatRoomID).get()
-                                                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                                                    @Override
-                                                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                                        if(documentSnapshot.getBoolean("userHasLeft")!=null){
-                                                                            //delete chatRoom
-                                                                            firestore.collection("RandomChatRoom").document(chatRoomID).delete()
-                                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                                                        @Override
-                                                                                        public void onSuccess(Void aVoid) {
-                                                                                            ChatRoomActivity.super.finish();
-                                                                                        }
-                                                                                    });
-                                                                        }else {
-                                                                            //update chatRoom
-                                                                            Map<String , Object> update = new HashMap<>();
-                                                                            update.put("userHasLeft" , true);
-                                                                            firestore.collection("RandomChatRoom").document(chatRoomID)
-                                                                                    .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                                                @Override
-                                                                                public void onSuccess(Void aVoid) {
-                                                                                    ChatRoomActivity.super.finish();
-                                                                                }
-                                                                            });
-                                                                        }
-                                                                    }
-                                                                });
-                                                    }
-                                                });
-                                            }
-                                        });
-                            }
-                        })
-                        .setNegativeButton("否", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                            }
-                        })
-                        .create();
-                blockAD.show();
+                block();
                 break;
             case R.id.leave:
-                AlertDialog leaveAD = new AlertDialog.Builder(this)
-                        .setTitle("刪除好友")
-                        .setMessage(R.string.leave_msg)
-                        .setPositiveButton("是", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                msgSonarTask.disableTask();
-                                //DB delete Random_Friends
-                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
-                                        .document(getIntent().getExtras().getString("otherUID")).delete();
-                                //DB chatRoom
-                                firestore.collection("RandomChatRoom").document(chatRoomID).get()
-                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                if(documentSnapshot.getBoolean("userHasLeft")!=null){
-                                                    //delete chatRoom
-                                                    firestore.collection("RandomChatRoom").document(chatRoomID).delete()
-                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                                @Override
-                                                                public void onSuccess(Void aVoid) {
-                                                                    ChatRoomActivity.super.finish();
-                                                                }
-                                                            });
-                                                }else {
-                                                    //update chatRoom
-                                                    Map<String , Object> update = new HashMap<>();
-                                                    update.put("userHasLeft" , true);
-                                                    firestore.collection("RandomChatRoom").document(chatRoomID)
-                                                            .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                        @Override
-                                                        public void onSuccess(Void aVoid) {
-                                                            ChatRoomActivity.super.finish();
-                                                        }
-                                                    });
-                                                }
-                                            }
-                                        });
-                            }
-                        })
-                        .setNegativeButton("否", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                dialogInterface.dismiss();
-                            }
-                        })
-                        .create();
-                leaveAD.show();
+                leave();
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -531,6 +448,144 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         });
     }
 
+    private void block(){
+        AlertDialog blockAD = new AlertDialog.Builder(this)
+                .setTitle("封鎖好友")
+                .setMessage(R.string.block_msg)
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        msgSonarTask.disableTask();
+                        firestore.collection("User").document(getIntent().getExtras().getString("otherUID")).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(final DocumentSnapshot friendsDocumentSnapshot) {
+                                        //DB add block_list
+                                        Map<String , Object> update = new HashMap<>();
+                                        update.put("name" , friendsDocumentSnapshot.getString("name"));//get real name
+                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
+                                                .document(friendsDocumentSnapshot.getId()).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                //DB delete Random_Friends
+                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                                        .document(friendsDocumentSnapshot.getId()).delete();
+                                                //DB chatRoom
+                                                firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                            @Override
+                                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                                if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                                                    firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                                                                            .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                                        @Override
+                                                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                                            for(DocumentSnapshot conversationDocumentSnapshot :queryDocumentSnapshots){
+                                                                                //delete conversation
+                                                                                conversationDocumentSnapshot.getReference().delete();
+                                                                            }
+                                                                            //delete chatRoom
+                                                                            firestore.collection("RandomChatRoom").document(chatRoomID).delete()
+                                                                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                        @Override
+                                                                                        public void onSuccess(Void aVoid) {
+                                                                                            ChatRoomActivity.super.finish();
+                                                                                        }
+                                                                                    });
+                                                                        }
+                                                                    });
+                                                                }else {
+                                                                    //update chatRoom
+                                                                    Map<String , Object> update = new HashMap<>();
+                                                                    update.put("userHasLeft" , true);
+                                                                    firestore.collection("RandomChatRoom").document(chatRoomID)
+                                                                            .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                        @Override
+                                                                        public void onSuccess(Void aVoid) {
+                                                                            ChatRoomActivity.super.finish();
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        });
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        blockAD.show();
+    }
+
+    private void leave(){
+        AlertDialog leaveAD = new AlertDialog.Builder(this)
+                .setTitle("刪除好友")
+                .setMessage(R.string.leave_msg)
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        msgSonarTask.disableTask();
+                        //DB delete Random_Friends
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                .document(getIntent().getExtras().getString("otherUID")).delete();
+                        //DB chatRoom
+                        firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                            //delete chatRoom
+                                            firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                    for(DocumentSnapshot conversationDocumentSnapshot :queryDocumentSnapshots){
+                                                        //delete conversation
+                                                        conversationDocumentSnapshot.getReference().delete();
+                                                    }
+                                                    //delete chatRoom
+                                                    firestore.collection("RandomChatRoom").document(chatRoomID).delete()
+                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void aVoid) {
+                                                                    ChatRoomActivity.super.finish();
+                                                                }
+                                                            });
+                                                }
+                                            });
+                                        }else {
+                                            //update chatRoom
+                                            Map<String , Object> update = new HashMap<>();
+                                            update.put("userHasLeft" , true);
+                                            firestore.collection("RandomChatRoom").document(chatRoomID)
+                                                    .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    ChatRoomActivity.super.finish();
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        leaveAD.show();
+    }
+
     private void sendPic(){
         if(sendPicView.getVisibility() == View.INVISIBLE ){
             sendPicView.setVisibility(View.VISIBLE);
@@ -618,9 +673,11 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        mainCoverView.setVisibility(View.GONE);
+        botCoverView.setVisibility(View.GONE);
         sendPicView.setVisibility(View.INVISIBLE);
         Uri uri = null;
-        if(requestCode == CAMERA_REQUEST && resultCode ==RESULT_OK ){
+        if(requestCode == CAMERA_REQUEST  && resultCode ==RESULT_OK ){
             uri = imgUri;
         }else if(requestCode == GALLERY_REQUEST && resultCode ==RESULT_OK  && data!=null){
             uri = data.getData();

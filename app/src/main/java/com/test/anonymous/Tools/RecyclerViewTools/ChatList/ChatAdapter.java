@@ -129,7 +129,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
             holder.myTime.setText(new MyTime().getFormatTime(currentItem.getTime() , "a hh:mm"));
             if(currentItem.isImg()){
                 //載入圖片
-                //載入圖片
                 holder.myImg.getLayoutParams().width = 2*(MainActivity.WINDOW_WIDTH /3);
                 Glide.with(holder.myImg.getContext())
                         .load(currentItem.getImgUrl())

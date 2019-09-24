@@ -29,6 +29,9 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -79,6 +82,11 @@ public class MainActivity extends AppCompatActivity
         setupNavigationView(toolbar);
         setupBotToolbar();
         setupConstantFields();//載入螢幕長寬
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         initUser();
     }
 
@@ -254,10 +262,10 @@ public class MainActivity extends AppCompatActivity
         Runnable progressRunnable = new Runnable() {
             @Override
             public void run() {
-                //登出
-                if(LoginManager.getInstance()!=null){//if is fb acc
-                    LoginManager.getInstance().logOut();
-                }
+                //fb登出
+                LoginManager.getInstance().logOut();
+                //google 登出
+                GoogleSignIn.getClient(MainActivity.this, GoogleSignInOptions.DEFAULT_SIGN_IN).signOut();
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(MainActivity.this , LoginActivity.class));
                 finish();
