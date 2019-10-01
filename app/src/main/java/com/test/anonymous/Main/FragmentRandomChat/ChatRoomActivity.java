@@ -17,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -31,7 +30,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.test.anonymous.BrowseImgActivity;
+import com.test.anonymous.Tools.Code;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.Keyboard;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ChatAdapter;
@@ -48,6 +49,7 @@ import at.markushi.ui.CircleButton;
 
 public class ChatRoomActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private View view;
     //RecyclerView
     private List<ItemChat> chatList;
     private RecyclerView list;
@@ -75,8 +77,6 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     //camera and Gallery
     private File imgFile;
     private Uri imgUri;
-    private final int CAMERA_REQUEST = 1888;
-    private final int GALLERY_REQUEST = 1890;
 
     //firestore
     private FirebaseAuth auth;
@@ -88,6 +88,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.app_bar_chat_room);
 
+        view = this.getCurrentFocus();
         list = findViewById(R.id.list);
         chatBtn = findViewById(R.id.chat_btn);
         sendPicBtn = findViewById(R.id.send_pic_btn);
@@ -355,7 +356,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                             chatAdapter.addMsg(itemChat);
                             inputET.setText("");
                             list.scrollToPosition(chatList.size()-1);//自動滾動到底部
-                            closeKeyboard();
+                            new Keyboard(getSystemService(INPUT_METHOD_SERVICE) , inputET.getRootView()).close();
                             //上傳資料庫
                             Map<String , Object> update = new HashMap<>();
                             update.put("index", lineNum);
@@ -660,14 +661,14 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                 (System.currentTimeMillis()) + ".jpg");
         imgUri = Uri.fromFile(imgFile);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
-        startActivityForResult(intent, CAMERA_REQUEST);
+        startActivityForResult(intent, Code.CAMERA_REQUEST);
     }
 
     private void galleryOnClick(){
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), GALLERY_REQUEST);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), Code.GALLERY_REQUEST);
     }
 
     @Override
@@ -677,9 +678,9 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         botCoverView.setVisibility(View.GONE);
         sendPicView.setVisibility(View.INVISIBLE);
         Uri uri = null;
-        if(requestCode == CAMERA_REQUEST  && resultCode ==RESULT_OK ){
+        if(requestCode == Code.CAMERA_REQUEST  && resultCode ==RESULT_OK ){
             uri = imgUri;
-        }else if(requestCode == GALLERY_REQUEST && resultCode ==RESULT_OK  && data!=null){
+        }else if(requestCode == Code.GALLERY_REQUEST && resultCode ==RESULT_OK  && data!=null){
             uri = data.getData();
         }
         if (uri != null) {
@@ -741,14 +742,6 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                             });
                         }
                     });
-        }
-    }
-
-    private void closeKeyboard(){
-        View view = this.getCurrentFocus();
-        if(view!=null){
-            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken() , 0);
         }
     }
 }

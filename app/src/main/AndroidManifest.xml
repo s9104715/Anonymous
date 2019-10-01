@@ -17,6 +17,7 @@
 
         <activity
             android:name=".Login.LoginActivity"
+            android:label="登入"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -28,22 +29,31 @@
 
         <activity
             android:name=".Login.RegisterActivity"
+            android:label="註冊"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
         <activity android:name=".Login.InternetCheckActivity"
+            android:label="檢查網路連線"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".Login.InitUserActivity"
+            android:label="使用者初始化"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
         <activity android:name=".Main.MainActivity"
-            android:label=""
+            android:label="主頁"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
         </activity>
 
         <activity android:name=".Main.FragmentRandomChat.RandomChatWaiting"
+            android:label="搜尋朋友"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
@@ -55,6 +65,13 @@
         </activity>
 
         <activity android:name=".BrowseImgActivity"
+            android:label="查看圖片"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".ProfileActivity"
+            android:label="檔案資訊"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>

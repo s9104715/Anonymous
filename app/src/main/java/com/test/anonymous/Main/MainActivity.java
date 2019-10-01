@@ -1,6 +1,7 @@
 package com.test.anonymous.Main;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
@@ -37,6 +39,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.infideap.drawerbehavior.Advance3DDrawerLayout;
+import com.infideap.drawerbehavior.AdvanceDrawerLayout;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.FragmentChatRoom;
 import com.test.anonymous.FragmentFriendsList;
@@ -44,6 +48,7 @@ import com.test.anonymous.Main.FragmentRandomChat.FragmentRandomChat;
 import com.test.anonymous.FragmentSetting;
 import com.test.anonymous.Login.LoginActivity;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.Keyboard;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -79,15 +84,17 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
-        setupNavigationView(toolbar);
         setupBotToolbar();
-        setupConstantFields();//載入螢幕長寬
+        //載入螢幕長寬
+        WINDOW_WIDTH = getWindowManager().getDefaultDisplay().getWidth();
+        WINDOW_HEIGHT = getWindowManager().getDefaultDisplay().getHeight();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         initUser();
+        setupNavigationView((Toolbar) findViewById(R.id.main_toolbar));
     }
 
     @Override
@@ -96,7 +103,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }else if (FragmentRandomChat.editNameView!=null && FragmentRandomChat.editNameView.getVisibility() == View.VISIBLE){
-            closeKeyboard();
+            new Keyboard(getSystemService(INPUT_METHOD_SERVICE) , this.getCurrentFocus()).close();
             FragmentRandomChat.chatBtn.setVisibility(View.VISIBLE);
             Animation move = AnimationUtils.loadAnimation(this , R.anim.move_down);
             move.setAnimationListener(new Animation.AnimationListener() {
@@ -175,11 +182,14 @@ public class MainActivity extends AppCompatActivity
     //測選單建置
     private void setupNavigationView(Toolbar topToolbar){
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        AdvanceDrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, topToolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
+        drawer.setViewScale(Gravity.START, 0.9f);
+        drawer.setRadius(Gravity.START, 35);
+        drawer.setViewElevation(Gravity.START, 20);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -193,7 +203,6 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if(documentSnapshot.exists()){
-
                             nameTV.setText(documentSnapshot.get("name").toString());
                             Picasso.get().load(documentSnapshot.getString("selfiePath"))
                                     //圖片使用最低分辨率,降低使用空間大小
@@ -355,19 +364,6 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 });
-    }
-
-    public void setupConstantFields(){
-        WINDOW_WIDTH = getWindowManager().getDefaultDisplay().getWidth();
-        WINDOW_HEIGHT = getWindowManager().getDefaultDisplay().getHeight();
-    }
-
-    private void closeKeyboard(){
-        View view = this.getCurrentFocus();
-        if(view!=null){
-            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken() , 0);
-        }
     }
 
  //產生fb登入所需的金鑰

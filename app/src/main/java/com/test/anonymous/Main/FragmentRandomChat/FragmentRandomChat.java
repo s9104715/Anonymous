@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +30,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.Keyboard;
+import com.test.anonymous.Tools.LoadingProcessDialog;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsComparator;
@@ -44,12 +47,12 @@ import cc.cloudist.acplibrary.ACProgressConstant;
 import cc.cloudist.acplibrary.ACProgressFlower;
 
 public class FragmentRandomChat extends Fragment implements View.OnClickListener {
+
     //RecyclerView
     private List<ItemFriends> friends;
     private RecyclerView list;
     private FriendsAdapter friendsAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private ACProgressFlower loadingPD;
 
     public static Button chatBtn;
 
@@ -87,8 +90,6 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         return view;
     }
 
-
-
     @Override
     public void onClick(View view) {
         switch (view.getId()){
@@ -114,8 +115,10 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
 
     //載入朋友清單
     private void loadFriends(){
-
-        showLoadingDialog();
+        //show loadingPD
+       final LoadingProcessDialog loadingPD = new LoadingProcessDialog(ACProgressConstant.DIRECT_CLOCKWISE ,
+               Color.WHITE , false , false , getContext())
+               .show();
 
         friends = new ArrayList<>();
         //搜尋Random_Friends
@@ -252,7 +255,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
             public void onClick(View view) {
                 //close editNameBtn
                 chatBtn.setVisibility(View.VISIBLE);
-                closeKeyboard();
+                new Keyboard(getActivity().getSystemService(Context.INPUT_METHOD_SERVICE) , view).close();
                 Animation moveDown = AnimationUtils.loadAnimation(getContext() , R.anim.move_down);
                 moveDown.setAnimationListener(new Animation.AnimationListener() {
                     @Override
@@ -292,7 +295,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                         }
                     });
                 }
-                closeKeyboard();
+                new Keyboard(getActivity().getSystemService(Context.INPUT_METHOD_SERVICE) , view).close();
                 chatBtn.setVisibility(View.VISIBLE);
                 Animation moveDown = AnimationUtils.loadAnimation(getContext() , R.anim.move_down);
                 moveDown.setAnimationListener(new Animation.AnimationListener() {
@@ -438,17 +441,6 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         leaveAD.show();
     }
 
-    public void showLoadingDialog(){
-         loadingPD = new ACProgressFlower.Builder(getContext())
-                .direction(ACProgressConstant.DIRECT_CLOCKWISE)
-                .themeColor(Color.WHITE)
-                .text("Loading......")
-                .fadeColor(Color.DKGRAY).build();
-         loadingPD.setCancelable(false);
-         loadingPD.setCanceledOnTouchOutside(false);
-         loadingPD.show();
-    }
-
     /*開始隨機聊天
          建立match的情況(角色為Matcher)：
              沒有match
@@ -553,13 +545,5 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 }
             }
         });
-    }
-
-    private void closeKeyboard(){
-       if(getView() != null && getActivity()!=null){
-           final InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-           inputMethodManager.hideSoftInputFromWindow(getView().getWindowToken(), 0);
-       }
-
     }
 }

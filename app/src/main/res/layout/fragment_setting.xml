@@ -22,120 +22,135 @@
             android:src="@drawable/default_selfie"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
             app:civ_border_width="2dp"
             app:civ_border_color="#AAAAAA"/>
 
         <TextView
-            android:id="@+id/setting_name"
+            android:id="@+id/name_TV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="anonymous"
             android:textSize="16dp"
-            app:layout_constraintTop_toBottomOf="@id/selfie"
-            app:layout_constraintLeft_toLeftOf="@id/selfie"
-            android:layout_marginTop="10dp"/>
+            app:layout_constraintTop_toTopOf="@id/selfie"
+            app:layout_constraintLeft_toRightOf="@id/selfie"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"/>
 
     </android.support.constraint.ConstraintLayout>
 
-    <ScrollView
-        android:id="@+id/content_scroll"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/bot_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_view">
+        android:layout_marginTop="125dp"
+        android:background="@drawable/bot_view_drawable">
 
-        <android.support.constraint.ConstraintLayout
+        <android.support.v4.view.ViewPager
+            android:id="@+id/profile_VP"
             android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/line1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:orientation="vertical"
+            android:layout_marginLeft="40dp"
+            android:layout_marginBottom="3dp">
+
+        </android.support.v4.view.ViewPager>
+
+        <android.support.constraint.Guideline
+            android:id="@+id/line1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingBottom="10dp">
+            app:layout_constraintGuide_percent="0.2"
+            android:orientation="horizontal"/>
 
-            <RelativeLayout
-                android:id="@+id/profile_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp">
+        <android.support.v4.view.ViewPager
+            android:id="@+id/friendList_VP"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/line1"
+            app:layout_constraintBottom_toTopOf="@id/line2"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:orientation="vertical"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
 
-                <TextView
-                    android:id="@+id/profile_TV"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="個人檔案"
-                    android:textSize="16dp" />
+        </android.support.v4.view.ViewPager>
 
-            </RelativeLayout>
+        <android.support.constraint.Guideline
+            android:id="@+id/line2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintGuide_percent="0.4"
+            android:orientation="horizontal"/>
 
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/profile_option"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/profile_btn"
-                app:layout_constraintLeft_toLeftOf="@id/profile_btn"
-                android:layout_marginTop="5dp"
-                android:layout_marginLeft="10dp"
-                android:paddingBottom="5dp"
-                android:visibility="gone">
+        <android.support.v4.view.ViewPager
+            android:id="@+id/group_VP"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/line2"
+            app:layout_constraintBottom_toTopOf="@id/line3"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:orientation="vertical"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
 
-                <RelativeLayout
-                    android:id="@+id/browse"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintLeft_toLeftOf="parent">
+        </android.support.v4.view.ViewPager>
 
-                    <TextView
-                        android:id="@+id/browse_TV"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="瀏覽檔案"/>
+        <android.support.constraint.Guideline
+            android:id="@+id/line3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintGuide_percent="0.6"
+            android:orientation="horizontal"/>
 
-                </RelativeLayout>
+        <android.support.v4.view.ViewPager
+            android:id="@+id/topic_lib_VP"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/line3"
+            app:layout_constraintBottom_toTopOf="@id/line4"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:orientation="vertical"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
 
-                <RelativeLayout
-                    android:id="@+id/edit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@id/browse"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    android:layout_marginTop="5dp">
+        </android.support.v4.view.ViewPager>
 
-                    <TextView
-                        android:id="@+id/edit_TV"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="修改檔案"/>
+        <android.support.constraint.Guideline
+            android:id="@+id/line4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintGuide_percent="0.8"
+            android:orientation="horizontal"/>
 
-                </RelativeLayout>
+        <android.support.v4.view.ViewPager
+            android:id="@+id/setting_VP"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/line4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:orientation="vertical"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="3dp">
 
-            </android.support.constraint.ConstraintLayout>
+        </android.support.v4.view.ViewPager>
 
-            <RelativeLayout
-                android:id="@+id/setting_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/profile_btn"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="10dp">
-
-                <TextView
-                    android:id="@+id/setting_TV"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="設定"
-                    android:textSize="16dp" />
-
-            </RelativeLayout>
-
-        </android.support.constraint.ConstraintLayout>
-
-    </ScrollView>
-
+    </android.support.constraint.ConstraintLayout>
 
 
 </android.support.constraint.ConstraintLayout>
