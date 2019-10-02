@@ -124,7 +124,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 onBackPressed();
                 break;
             case R.id.gender_cover_view:
-                Toast.makeText(this , "性別經過設定就不能再修改囉！" , Toast.LENGTH_LONG).show();
+                Toast.makeText(this , getString(R.string.gender_setting_msg) , Toast.LENGTH_LONG).show();
                 break;
         }
     }

@@ -22,6 +22,8 @@
     <string name="block_msg">封鎖對方將不會再收到對方訊息，且會刪除聊天紀錄即離開聊天室，確定要封鎖嗎？</string>
     <string name="leave_msg">刪除好友將看不到聊天紀錄，確定要刪除嗎？</string>
 
+    <string name="gender_setting_msg">性別經過設定就不能再修改囉！</string>
+
     <string name="user_default_selfie_url">https://firebasestorage.googleapis.com/v0/b/anonymous-d01f4.appspot.com/o/UserSelfie%2Fdefault.png?alt=media&amp;token=12c64d68-2cb2-4bed-8952-ba4248ec94f3</string>
     <!--for google login-->
     <string name="server_client_id">958278448120-km99lpls81jql8ahvif2lgu4ucfc2ip0.apps.googleusercontent.com</string>

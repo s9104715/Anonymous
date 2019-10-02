@@ -44,6 +44,7 @@ import com.infideap.drawerbehavior.AdvanceDrawerLayout;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.FragmentChatRoom;
 import com.test.anonymous.FragmentFriendsList;
+import com.test.anonymous.Login.InitUserActivity;
 import com.test.anonymous.Main.FragmentRandomChat.FragmentRandomChat;
 import com.test.anonymous.FragmentSetting;
 import com.test.anonymous.Login.LoginActivity;
@@ -75,8 +76,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
 
         auth = FirebaseAuth.getInstance();
         firestore =FirebaseFirestore.getInstance();
@@ -294,73 +293,9 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if(documentSnapshot.getString("gender").equals("")){
-
-                            //使用者尚未更新性別年齡
-                            AlertDialog.Builder ADBuider = new AlertDialog.Builder(MainActivity.this)
-                                    .setOnKeyListener(new DialogInterface.OnKeyListener() {
-                                        @Override
-                                        public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent keyEvent) {
-                                            //override AlertDialog's onBackPressed method
-                                            if (keyCode == KeyEvent.KEYCODE_BACK  && keyEvent.getAction() == KeyEvent.ACTION_UP  && !keyEvent.isCanceled()) {
-                                               //doing nothing
-                                                Log.e("AD's onBackPressed" , "doing nothing");
-                                                return true;
-                                            }
-                                            return false;
-                                        }
-                                    });
-                            final View v = getLayoutInflater().inflate(R.layout.dialog_init_user_setting,null);
-                            ADBuider.setView(v);
-                            initUserAD = ADBuider.create();
-                            initUserAD.show();
-
-                            //load user data
-                            final CircleImageView selfie = v.findViewById(R.id.selfie);
-                            final TextView nameTV = v.findViewById(R.id.name_TV);
-                            firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
-                                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                        @Override
-                                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                            nameTV.setText(documentSnapshot.get("name").toString());
-                                            Picasso.get().load(documentSnapshot.getString("selfiePath"))
-                                                    //圖片使用最低分辨率,降低使用空間大小
-                                                    .fit()
-                                                    .centerCrop()
-                                                    .into(selfie);//取得大頭貼
-                                        }
-                                    });
-
-                            final RadioGroup genderRG = v.findViewById(R.id.gender_RG);
-
-                            v.findViewById(R.id.confirm_btn).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-
-                                    RadioButton radioButton =  v.findViewById(genderRG.getCheckedRadioButtonId());
-                                    String gender = (String) radioButton.getText();
-                                    EditText ageET = v.findViewById(R.id.age_ET);
-                                    String age = ageET.getText().toString().trim();
-
-                                    if(age.isEmpty()){
-                                        ageET.setError(" 此欄位必填");
-                                        ageET.requestFocus();
-                                        return;
-                                    }
-                                    //更新使用者資料
-                                    Map<String  , Object> update = new HashMap<>();
-                                    update.put("gender" , gender);
-                                    update.put("age" , Integer.parseInt(age));
-                                    firestore.collection("User").document(auth.getCurrentUser().getUid())
-                                            .set(update , SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Log.e("initUser" , "success");
-                                            Toast.makeText(MainActivity.this , "設定完成" , Toast.LENGTH_LONG).show();
-                                            initUserAD.dismiss();
-                                        }
-                                    });
-                                }
-                            });
+                            //start initUser
+                            startActivity(new Intent(MainActivity.this , InitUserActivity.class));
+                            finish();
                         }
                     }
                 });

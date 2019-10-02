@@ -71,7 +71,7 @@
         </activity>
 
         <activity android:name=".ProfileActivity"
-            android:label="檔案資訊"
+            android:label="個人檔案"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
