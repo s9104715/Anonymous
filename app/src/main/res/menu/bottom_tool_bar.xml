@@ -11,7 +11,7 @@
         android:id="@+id/example2"
         android:enabled="true"
         android:icon="@drawable/share"
-        android:title="搜尋朋友"
+        android:title="搜尋附近朋友"
         app:showAsAction="always"/>
     <item
         android:id="@+id/example3"

@@ -35,6 +35,7 @@ dependencies {
     implementation 'cc.cloudist.acplibrary:library:1.2.1'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     implementation 'com.infideap.drawerbehavior:drawer-behavior:0.1.5'
+    implementation 'com.github.JungHsuan:CircularList:1.2.3'
     //firebase
     implementation 'com.google.firebase:firebase-firestore:18.0.1'
     implementation 'com.google.firebase:firebase-core:16.0.7'
@@ -42,6 +43,10 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:16.0.5'
     //google service
     implementation 'com.google.android.gms:play-services-auth:16.0.0'
+    //map
+    //map
+    implementation 'com.google.android.gms:play-services-maps:16.1.0'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
     //FB
     implementation 'com.facebook.android:facebook-android-sdk:4.42.0'
 }

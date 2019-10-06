@@ -6,6 +6,8 @@
 
     <!--internet permission-->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!--locaion permission-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +19,6 @@
 
         <activity
             android:name=".Login.LoginActivity"
-            android:label="登入"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -70,17 +71,26 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".ProfileActivity"
+        <activity android:name=".Main.FragmentSetting.ProfileActivity"
             android:label="個人檔案"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".Main.FragmentPosSearch.PosSearchWaiting"
+            android:label="搜尋朋友"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+
         </activity>
 
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"
             tools:replace="android:value"/>
-
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
     </application>
 
 </manifest>

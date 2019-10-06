@@ -1,18 +1,13 @@
 package com.test.anonymous.Main;
 
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -24,35 +19,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
-import com.infideap.drawerbehavior.Advance3DDrawerLayout;
 import com.infideap.drawerbehavior.AdvanceDrawerLayout;
 import com.squareup.picasso.Picasso;
-import com.test.anonymous.FragmentChatRoom;
+import com.test.anonymous.Main.FragmentPosSearch.FragmentPosSearch;
 import com.test.anonymous.FragmentFriendsList;
 import com.test.anonymous.Login.InitUserActivity;
 import com.test.anonymous.Main.FragmentRandomChat.FragmentRandomChat;
-import com.test.anonymous.FragmentSetting;
+import com.test.anonymous.Main.FragmentSetting.FragmentSetting;
 import com.test.anonymous.Login.LoginActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.Keyboard;
 
-import java.util.HashMap;
-import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity
@@ -61,7 +47,6 @@ public class MainActivity extends AppCompatActivity
     //底部toolbar
     private BottomNavigationView botToolBar;
     private ProgressDialog signOutPD;
-    private AlertDialog initUserAD;//讓新用戶於建立完帳號後更新性別年齡等資料
 
     //Firebase
     private FirebaseAuth auth;
@@ -218,7 +203,7 @@ public class MainActivity extends AppCompatActivity
     private void setupBotToolbar(){
 
         final FragmentRandomChat randomChat = new FragmentRandomChat();
-        final FragmentChatRoom chatRoom = new FragmentChatRoom();
+        final FragmentPosSearch chatRoom = new FragmentPosSearch();
         final FragmentFriendsList fragmentFriendsList = new FragmentFriendsList();
         final FragmentSetting setting = new FragmentSetting();
 

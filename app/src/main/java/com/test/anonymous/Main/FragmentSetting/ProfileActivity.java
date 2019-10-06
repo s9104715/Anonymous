@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main.FragmentSetting;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,7 +15,6 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -24,12 +23,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.R;
 import com.test.anonymous.Tools.Code;
 import com.test.anonymous.Tools.Keyboard;
 import com.test.anonymous.Tools.LoadingProcessDialog;
-import com.test.anonymous.Tools.MyTime;
-import com.test.anonymous.Tools.RandomCode;
-import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ItemChat;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;

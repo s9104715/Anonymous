@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main.FragmentSetting;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.R;
 import com.test.anonymous.Tools.Task;
 import com.test.anonymous.Tools.ViewPagerTools.ItemSetting;
 import com.test.anonymous.Tools.ViewPagerTools.SettingAdapter;

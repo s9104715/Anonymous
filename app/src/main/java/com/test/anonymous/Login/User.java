@@ -1,7 +1,12 @@
 package com.test.anonymous.Login;
 
+import android.location.Location;
+
+import com.google.firebase.firestore.GeoPoint;
+
 public class User {
 
+    //login
     private String name;
     private String gender;
     private int age;
@@ -12,6 +17,7 @@ public class User {
     public User() {
     }
 
+    //for login
     public User(String name, String gender, int age ,  boolean verify, String selfiePath, String LOGIN_TYPE) {
         this.name = name;
         this.gender = gender;

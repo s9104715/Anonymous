@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +35,7 @@ import java.util.TimerTask;
         false則為Matcher*/
 public class RandomChatWaiting extends AppCompatActivity implements View.OnClickListener {
 
+    private ImageView backBtn;
     //waitingBar
     private ProgressBar waitingBar;
     private TextView waitingTV;
@@ -57,6 +59,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_random_chat_waiting);
 
+        backBtn = findViewById(R.id.back_btn);
         waitingBar = findViewById(R.id.waiting_bar);
         waitingTV = findViewById(R.id.waiting_TV);
         cancelBtn = findViewById(R.id.cancel_btn);
@@ -64,6 +67,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
         waitingTV.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move_upward));
         cancelBtn.startAnimation(AnimationUtils.loadAnimation(this , R.anim.move_upward));
 
+        backBtn.setOnClickListener(this);
         cancelBtn.setOnClickListener(this);
 
        //firebase初始化
@@ -96,6 +100,9 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
     @Override
     public void onClick(View view) {
         switch (view.getId()){
+            case R.id.back_btn:
+                onBackPressed();
+                break;
             case R.id.cancel_btn:
                 onBackPressed();
                 break;
