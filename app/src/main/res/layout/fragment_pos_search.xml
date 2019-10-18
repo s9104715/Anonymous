@@ -14,16 +14,82 @@
         app:layout_constraintRight_toRightOf="parent">
     </android.support.v7.widget.RecyclerView>
 
+    <ImageView
+        android:id="@+id/no_friends_img"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:src="@drawable/no_friends"
+        app:layout_constraintTop_toTopOf="@id/list"
+        app:layout_constraintLeft_toLeftOf="@id/list"
+        app:layout_constraintRight_toRightOf="@id/list"
+        app:layout_constraintBottom_toBottomOf="@id/list"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/no_friends_TV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="您目前還沒有朋友喔！"
+        app:layout_constraintTop_toBottomOf="@id/no_friends_img"
+        app:layout_constraintLeft_toLeftOf="@id/no_friends_img"
+        app:layout_constraintRight_toRightOf="@id/no_friends_img"
+        android:visibility="gone"/>
+
     <at.markushi.ui.CircleButton
-        android:id="@+id/search_btn"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        app:cb_color="#008577"
-        android:src="@drawable/search"
+        android:id="@+id/invitation_btn"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        app:cb_color="@color/colorPrimary"
+        android:src="@drawable/invitation"
         app:cb_pressedRingWidth="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_container"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="30dp"
-        android:layout_marginRight="30dp"/>
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="10dp"/>
+
+    <RelativeLayout
+        android:id="@+id/unRead_line_num"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/unread_line_num_style_turquoise"
+        app:layout_constraintTop_toTopOf="@id/invitation_btn"
+        app:layout_constraintRight_toRightOf="@id/invitation_btn"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/unRead_line_num_TV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2"
+            android:padding="5dp"/>
+
+    </RelativeLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/btn_container"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <Button
+            android:id="@+id/search_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="搜尋附近朋友"
+            android:textColor="@color/white"
+            app:layout_constraintTop_toTopOf="@id/btn_container"
+            app:layout_constraintBottom_toBottomOf="@id/btn_container"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:background="@drawable/btn_style_blue"/>
+
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>

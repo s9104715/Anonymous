@@ -16,6 +16,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -38,7 +41,10 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
     private FriendsAdapter friendsAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private CircleButton searchBtn;
+    private ImageView noFriendsImg;
+    private TextView noFriendsTV;
+
+    private Button searchBtn;
 
     //location
     private FusedLocationProviderClient fusedLocationClient;
@@ -51,6 +57,8 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
         View view = inflater.inflate(R.layout.fragment_pos_search, container, false);
 
         list = view.findViewById(R.id.list);
+        noFriendsImg = view.findViewById(R.id.no_friends_img);
+        noFriendsTV = view.findViewById(R.id.no_friends_TV);
         searchBtn = view.findViewById(R.id.search_btn);
 
         searchBtn.setOnClickListener(this);
@@ -84,7 +92,7 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
             // for ActivityCompat#requestPermissions for more details.
 
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    Code.Location_Request_Code);
+                    Code.LOCATION_REQUEST);
             return;
         }
         //granted
@@ -131,7 +139,7 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if(requestCode == Code.Location_Request_Code && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if(requestCode == Code.LOCATION_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             //granted
             //start waiting
             fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {

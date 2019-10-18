@@ -166,19 +166,4 @@ public class RegisterActivity  extends AppCompatActivity implements View.OnClick
         registPD.setCanceledOnTouchOutside(false);
         registPD.show();
     }
-
-//    //產生預設的user子collection
-//    private void createDefaultUserCollection(){
-//
-//        //create Random_Friends
-//        Map<String, Object> update = new HashMap<>();
-//        update.put("remark", "this is a base document , do not remove");
-//        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends").document("base_doc")
-//                .set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
-//            @Override
-//            public void onSuccess(Void aVoid) {
-//                Log.e("add collection" , "success");
-//            }
-//        });
-//    }
 }

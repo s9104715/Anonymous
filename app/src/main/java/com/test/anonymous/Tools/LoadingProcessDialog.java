@@ -22,6 +22,10 @@ public class LoadingProcessDialog {
     }
 
     public void dismiss(){
-     this.loadingPD.dismiss();
+        try {
+            this.loadingPD.dismiss();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

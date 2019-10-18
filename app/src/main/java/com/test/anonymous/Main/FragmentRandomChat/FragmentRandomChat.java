@@ -22,6 +22,9 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,7 +56,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private RecyclerView list;
     private FriendsAdapter friendsAdapter;
     private RecyclerView.LayoutManager layoutManager;
-
+    private ImageView noFriendsImg;
+    private TextView noFriendsTV;
     public static Button chatBtn;
 
     private Task msgSonarTask;
@@ -75,6 +79,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         View view = inflater.inflate(R.layout.fragment_random_chat, container, false);
 
         list = view.findViewById(R.id.list);
+        noFriendsImg = view.findViewById(R.id.no_friends_img);
+        noFriendsTV = view.findViewById(R.id.no_friends_TV);
         chatBtn = view.findViewById(R.id.chat_btn);
         coverView = view.findViewById(R.id.cover_view);
         editNameView = view.findViewById(R.id.edit_name_view);
@@ -130,6 +136,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 if(queryDocumentSnapshots.isEmpty()){
                     //no friends
                     loadingPD.dismiss();
+                    noFriendsImg.setVisibility(View.VISIBLE);
+                    noFriendsTV.setVisibility(View.VISIBLE);
                 }else {
                     for (final DocumentSnapshot friendsDocumentSnapshot : queryDocumentSnapshots) {
                         final String friendUID = friendsDocumentSnapshot.getId();

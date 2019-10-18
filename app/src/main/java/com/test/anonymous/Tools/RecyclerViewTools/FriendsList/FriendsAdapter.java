@@ -7,13 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
-
-import java.util.Collections;
 import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 

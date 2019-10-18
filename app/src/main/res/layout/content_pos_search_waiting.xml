@@ -32,8 +32,8 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="@id/sort_btn"
         app:layout_constraintRight_toRightOf="@id/sort_btn"
-        android:layout_marginTop="15dp"
-        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
         app:cardCornerRadius="8dp"
         android:visibility="gone">
 
