@@ -43,7 +43,7 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
      private ImageView confirmBtn;
      private CircleImageView selfie;
      private RadioGroup genderRG;
-     private EditText ageET;
+     private EditText ageET , introET;
      //career list
      private List<ItemCareer> careers;
      private RecyclerView careerList;
@@ -69,6 +69,7 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
         selfie =findViewById(R.id.selfie);
         genderRG = findViewById(R.id.gender_RG);
         ageET = findViewById(R.id.age_ET);
+        introET = findViewById(R.id.intro_ET);
         careerList = findViewById(R.id.career_list);
         hobbyList = findViewById(R.id.hobby_list);
 
@@ -92,6 +93,7 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
     private void setupUI(){
         Toast.makeText(this , "請先設定您的資料！", Toast.LENGTH_LONG).show();
         //load selfie
+        selfie.bringToFront();
         firestore.collection("User").document(auth.getCurrentUser().getUid())
                 .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
@@ -228,6 +230,7 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
                 }
             }
         }
+        String intro = introET.getText().toString().trim();
         if(age.isEmpty()){
             ageET.setError("年齡不能為空");
             ageET.requestFocus();
@@ -258,10 +261,10 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
             selectedHobbyList.clear();
             return;
         }
-        uploadUserData(gender , age , career , selectedHobbyList);
+        uploadUserData(gender , age , career , selectedHobbyList ,intro);
     }
 
-    private void uploadUserData(final String gender , final String age , final  String career , final List<String> hobbyList){
+    private void uploadUserData(final String gender , final String age , final  String career , final List<String> hobbyList , final String intro){
         AlertDialog.Builder ADBuilder = new AlertDialog.Builder(this)
                 .setTitle("提醒")
                 .setMessage(getString(R.string.gender_setting_msg))
@@ -275,13 +278,15 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
                         final LoadingProcessDialog loadingPD = new LoadingProcessDialog(ACProgressConstant.DIRECT_CLOCKWISE ,
                                 Color.WHITE , false , false , InitUserActivity.this)
                                 .show();
-
+                        //初始化使用者評論資料
+                        initUserCommentData();
                         //更新使用者資料
                         Map<String  , Object> update = new HashMap<>();
                         update.put("gender" , gender);
                         update.put("age" , Integer.parseInt(age));
                         update.put("career" , career);
                         update.put("hobbies" , hobbyList);
+                        update.put("intro" , intro);
                         firestore.collection("User").document(auth.getCurrentUser().getUid())
                                 .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
@@ -303,5 +308,14 @@ public class InitUserActivity extends AppCompatActivity implements View.OnClickL
                 });
         confirmAD = ADBuilder.create();
         confirmAD.show();
+    }
+    //init user comment
+    private void initUserCommentData(){
+        Map<String  , Object> update = new HashMap<>();
+        update.put("greatNum" , 0);
+        update.put("notBadNum" , 0);
+        update.put("badNum" , 0);
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Comment")
+                .document("comment").set(update);
     }
 }

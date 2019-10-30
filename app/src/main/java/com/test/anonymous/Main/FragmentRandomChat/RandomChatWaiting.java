@@ -170,7 +170,9 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                                     Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
                                     intent.putExtra("chatRoomID" ,  documentSnapshot.getString("chatRoomID"))
                                             .putExtra("myUID" , auth.getCurrentUser().getUid())
-                                            .putExtra("otherUID" , matcherUID);
+                                            .putExtra("otherUID" , matcherUID)
+                                            .putExtra("chat_room_type" , "RandomChatRoom")
+                                            .putExtra("friend_type" , "Random_Friends");
                                     startActivity(intent);
                                     finish();
                                     runOnUiThread(new Runnable() {
@@ -194,87 +196,100 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
     //有matcher的情況下找尋matcher
     private void findMatcher() {
 
-        final ArrayList<String> friendUIDList = new ArrayList<>();
-        final ArrayList<String> blockList = new ArrayList<>();
         firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 //add friendUIDList
+                final ArrayList<String> friendUIDList = new ArrayList<>();
                 for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
                     friendUIDList.add(documentSnapshot.getId());
                 }
 
-                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
-                        .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        //add blockList
-                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                            blockList.add(documentSnapshot.getId());
-                        }
+                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Friends").get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                //add friendUIDList
+                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                                    friendUIDList.add(documentSnapshot.getId());
+                                }
 
-                        firestore.collection("RandomMatch").orderBy("order" , Query.Direction.ASCENDING).get()
-                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
+                                        .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                     @Override
                                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        //add blockList
+                                        final ArrayList<String> blockList = new ArrayList<>();
+                                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                                            blockList.add(documentSnapshot.getId());
+                                        }
 
-                                        final boolean[] lock = {false};//媒合成功之後迴圈上鎖
+                                        firestore.collection("RandomMatch").orderBy("order" , Query.Direction.ASCENDING).get()
+                                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
-                                        for (final DocumentSnapshot matchDocumentSnapshot : queryDocumentSnapshots) {
-                                            firestore.collection("User").document(matchDocumentSnapshot.getId()).collection("Block_List")
-                                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                                @Override
-                                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                        final boolean[] lock = {false};//媒合成功之後迴圈上鎖
 
-                                                    boolean isFriend = false;
-                                                    boolean isBlocked = false;
-
-                                                    for (DocumentSnapshot matcherDocumentSnapshot : queryDocumentSnapshots){
-                                                        if(matcherDocumentSnapshot.getId().equals(auth.getCurrentUser().getUid())){
-                                                            isBlocked = true;
-                                                            break;
-                                                        }
-                                                    }
-
-                                                    for(String friendUID : friendUIDList){
-                                                        if(friendUID.equals(matchDocumentSnapshot.getId())){
-                                                            isFriend = true;
-                                                            break;
-                                                        }
-                                                    }
-
-                                                    //my block list
-                                                    for(String blockID: blockList){
-                                                        if(blockID.equals(matchDocumentSnapshot.getId())){
-                                                            isBlocked = true;
-                                                            break;
-                                                        }
-                                                    }
-
-                                                    if(!isFriend && !isBlocked && !lock[0]){
-                                                        if (!matchDocumentSnapshot.getBoolean("contact")) {
-                                                            Map<String, Object> update = new HashMap<>();
-                                                            update.put("contact", true);
-                                                            update.put("contacter" , auth.getCurrentUser().getUid());
-                                                            firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
-                                                                    .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                        for (final DocumentSnapshot matchDocumentSnapshot : queryDocumentSnapshots) {
+                                                            firestore.collection("User").document(matchDocumentSnapshot.getId()).collection("Block_List")
+                                                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                                                 @Override
-                                                                public void onSuccess(Void aVoid) {
-                                                                    match(matchDocumentSnapshot.getId());
+                                                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                                                                    boolean isFriend = false;
+                                                                    boolean isBlocked = false;
+
+                                                                    //判斷對方是否封鎖自己
+                                                                    for (DocumentSnapshot matcherDocumentSnapshot : queryDocumentSnapshots){
+                                                                        if(matcherDocumentSnapshot.getId().equals(auth.getCurrentUser().getUid())){
+                                                                            isBlocked = true;
+                                                                            break;
+                                                                        }
+                                                                    }
+
+                                                                    //判斷是否已成為朋友
+                                                                    for(String friendUID : friendUIDList){
+                                                                        if(friendUID.equals(matchDocumentSnapshot.getId())){
+                                                                            isFriend = true;
+                                                                            break;
+                                                                        }
+                                                                    }
+
+                                                                    //判斷對方是否已被封鎖
+                                                                    for(String blockID: blockList){
+                                                                        if(blockID.equals(matchDocumentSnapshot.getId())){
+                                                                            isBlocked = true;
+                                                                            break;
+                                                                        }
+                                                                    }
+
+                                                                    if(!isFriend && !isBlocked && !lock[0]){
+                                                                        if (!matchDocumentSnapshot.getBoolean("contact")) {
+                                                                            Map<String, Object> update = new HashMap<>();
+                                                                            update.put("contact", true);
+                                                                            update.put("contacter" , auth.getCurrentUser().getUid());
+                                                                            firestore.collection("RandomMatch").document(matchDocumentSnapshot.getId())
+                                                                                    .set(update, SetOptions.merge()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                                @Override
+                                                                                public void onSuccess(Void aVoid) {
+                                                                                    match(matchDocumentSnapshot.getId());
+                                                                                }
+                                                                            });
+                                                                            lock[0] = true;
+                                                                        }
+                                                                    }
+
                                                                 }
                                                             });
-                                                            lock[0] = true;
                                                         }
                                                     }
-
-                                                }
-                                            });
-                                        }
+                                                });
                                     }
                                 });
-                    }
-                });
+                            }
+                        });
             }
         });
     }
@@ -366,7 +381,9 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                         Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
                         intent.putExtra("chatRoomID" ,  chatRoomID )
                                     .putExtra("myUID" , user1)
-                                    .putExtra("otherUID", user2);
+                                    .putExtra("otherUID", user2)
+                                    .putExtra("chat_room_type" , "RandomChatRoom")
+                                    .putExtra("friend_type" , "Random_Friends");
                         startActivity(intent);
                         finish();
                         Toast.makeText(getApplicationContext(), "尋找成功", Toast.LENGTH_LONG).show();

@@ -19,7 +19,7 @@
     <string name="option_block">封鎖</string>
     <string name="option_leave">離開聊天室</string>
     <!--friendsAdapter OnLongClick option-->
-    <string name="block_msg">封鎖對方將不會再收到對方訊息，且會刪除聊天紀錄即離開聊天室，確定要封鎖嗎？</string>
+    <string name="block_msg">封鎖對方將不會再收到對方訊息，且會刪除聊天紀錄及離開聊天室，確定要封鎖嗎？</string>
     <string name="leave_msg">刪除好友將看不到聊天紀錄，確定要刪除嗎？</string>
     <string name="gender_setting_msg">性別經過設定就不能再修改囉！</string>
     <!--user default selfie-->

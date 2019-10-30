@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.R;
+import com.test.anonymous.Tools.TextProcessor;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -76,7 +77,7 @@ public class RecyclerPosUserAdapter extends RecyclerView.Adapter<RecyclerPosUser
                 .centerCrop()
                 .into(baseViewHolder.selfie);//取得大頭貼
         baseViewHolder.nameTV.setText(currentItem.getName());
-        baseViewHolder.distanceTV.setText(new DecimalFormat("#.##").format(currentItem.getDistance()));
+        baseViewHolder.distanceTV.setText(new TextProcessor().doubleFormat("#.##" , currentItem.getDistance()));
     }
 
     @Override

@@ -56,8 +56,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private RecyclerView list;
     private FriendsAdapter friendsAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private ImageView noFriendsImg;
-    private TextView noFriendsTV;
+    private ConstraintLayout noFriends;
     public static Button chatBtn;
 
     private Task msgSonarTask;
@@ -79,8 +78,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         View view = inflater.inflate(R.layout.fragment_random_chat, container, false);
 
         list = view.findViewById(R.id.list);
-        noFriendsImg = view.findViewById(R.id.no_friends_img);
-        noFriendsTV = view.findViewById(R.id.no_friends_TV);
+        noFriends = view.findViewById(R.id.no_friends);
         chatBtn = view.findViewById(R.id.chat_btn);
         coverView = view.findViewById(R.id.cover_view);
         editNameView = view.findViewById(R.id.edit_name_view);
@@ -136,9 +134,9 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 if(queryDocumentSnapshots.isEmpty()){
                     //no friends
                     loadingPD.dismiss();
-                    noFriendsImg.setVisibility(View.VISIBLE);
-                    noFriendsTV.setVisibility(View.VISIBLE);
+                    noFriends.setVisibility(View.VISIBLE);
                 }else {
+                    noFriends.setVisibility(View.GONE);
                     for (final DocumentSnapshot friendsDocumentSnapshot : queryDocumentSnapshots) {
                         final String friendUID = friendsDocumentSnapshot.getId();
                         final String chatRoomID = friendsDocumentSnapshot.getString("chatRoomID");
@@ -194,7 +192,9 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 intent.putExtra("chatRoomID" , friends.get(position).getChatRoomID())
                             .putExtra("myUID" , auth.getCurrentUser().getUid())
                             .putExtra("otherUID" , friends.get(position).getUserUID())
-                            .putExtra("name" , friends.get(position).getName());
+                            .putExtra("name" , friends.get(position).getName())
+                            .putExtra("chat_room_type" , "RandomChatRoom")
+                            .putExtra("friend_type" , "Random_Friends");
                 startActivity(intent);
             }
         });

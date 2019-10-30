@@ -48,7 +48,7 @@
         </activity>
 
         <activity android:name=".Main.MainActivity"
-            android:label="主頁"
+            android:label=""
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
         </activity>
@@ -81,7 +81,18 @@
             android:label="搜尋朋友"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
+        <activity android:name=".Main.FragmentPosSearch.InvitationActivity"
+            android:label="邀請"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".Main.FragmentPosSearch.InvitationBoxActivity"
+            android:label="邀請"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
         <meta-data
@@ -91,6 +102,16 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+        <!--StorageFileProvider-->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
     </application>
 
 </manifest>

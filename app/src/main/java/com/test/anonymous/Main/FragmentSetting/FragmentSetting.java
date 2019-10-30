@@ -2,6 +2,7 @@ package com.test.anonymous.Main.FragmentSetting;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -18,14 +19,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 import com.test.anonymous.R;
-import com.test.anonymous.Tools.Task;
 import com.test.anonymous.Tools.ViewPagerTools.ItemSetting;
 import com.test.anonymous.Tools.ViewPagerTools.SettingAdapter;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -35,8 +32,6 @@ public class FragmentSetting extends Fragment {
     private TextView nameTV;
     private ConstraintLayout botView;
     private ViewPager profileVP , friendListVP , groupVP , topicLibVP , settingVP;
-
-    private Task scrollTask , startActivityTask;
 
     //Firebase
     private FirebaseAuth auth;
@@ -116,10 +111,20 @@ public class FragmentSetting extends Fragment {
             public void onPageSelected(int i) {
                 //復原
                 if(i == 0){
-                    buildStartActivityTask(new Intent(getContext() , ProfileActivity.class));
-                    startActivityTask.activateTask(200 , 1000);
-                    buildScrollTask(profileVP);
-                    scrollTask.activateTask(1500 , 1000);
+                    //start activity
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            startActivity(new Intent(getContext() , ProfileActivity.class));
+                        }
+                    } , 200);
+                    //scroll to origin position
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            profileVP.setCurrentItem(1);
+                        }
+                    } , 1500);
                 }
             }
 
@@ -224,26 +229,6 @@ public class FragmentSetting extends Fragment {
                         .centerCrop()
                         .into(selfie);//取得大頭貼
                 nameTV.setText(documentSnapshot.getString("name"));
-            }
-        });
-    }
-
-    private void buildScrollTask(final ViewPager viewPager){
-        scrollTask = new Task(new Timer(), new TimerTask() {
-            @Override
-            public void run() {
-                viewPager.setCurrentItem(1);
-                scrollTask.disableTask();
-            }
-        });
-    }
-
-    private void buildStartActivityTask(final Intent intent){
-        startActivityTask = new Task(new Timer(), new TimerTask() {
-            @Override
-            public void run() {
-                startActivity(intent);
-                startActivityTask.disableTask();
             }
         });
     }

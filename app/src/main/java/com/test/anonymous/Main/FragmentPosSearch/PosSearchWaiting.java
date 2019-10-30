@@ -1,11 +1,14 @@
 package com.test.anonymous.Main.FragmentPosSearch;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -30,14 +33,12 @@ import com.test.anonymous.Tools.CircularListTools.CircularPosUserAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.PosUserList.ItemPosUserComparator;
 import com.test.anonymous.Tools.RecyclerViewTools.PosUserList.ItemPosUserRecycler;
 import com.test.anonymous.Tools.RecyclerViewTools.PosUserList.RecyclerPosUserAdapter;
-import com.test.anonymous.Tools.Task;
+import com.test.anonymous.Tools.TextProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -54,6 +55,7 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
     private List<ItemPosUserCircular> posUserCircularList;
     private CircularListView circularList;
     private CircularPosUserAdapter circularPosUserAdapter;
+    private CircleImageView selfie;
     //RecyclerView
     private List<ItemPosUserRecycler> posUserRecyclerList;
     private RecyclerView recyclerList;
@@ -64,7 +66,7 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
 
     private double latitude;
     private double longitude;
-    private Task showTask;
+
     //Firebase
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
@@ -85,6 +87,7 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
         waitingTV = findViewById(R.id.waiting_TV);
         cancelBtn = findViewById(R.id.cancel_btn);
         circularList = findViewById(R.id.circular_list);
+        selfie = findViewById(R.id.selfie);
 
         backBtn.setOnClickListener(this);
         sortBtn.setOnClickListener(this);
@@ -202,8 +205,8 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
     }
 
     private void showCircularList(){
-        Animation moveRight = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
-        moveRight.setAnimationListener(new Animation.AnimationListener() {
+        Animation fadeOut = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -213,7 +216,9 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
             public void onAnimationEnd(Animation animation) {
                 recyclerList.setVisibility(View.INVISIBLE);
                 circularList.setVisibility(View.VISIBLE);
+                selfie.setVisibility(View.VISIBLE);
                 circularList.startAnimation(AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_in));
+                selfie.startAnimation(AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_in));
             }
 
             @Override
@@ -221,12 +226,12 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
 
             }
         });
-        recyclerList.startAnimation(moveRight);
+        recyclerList.startAnimation(fadeOut);
     }
 
     private void showRecyclerList(){
-        Animation moveRight = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
-        moveRight.setAnimationListener(new Animation.AnimationListener() {
+        Animation fadeOut = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -235,6 +240,7 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
             @Override
             public void onAnimationEnd(Animation animation) {
                 circularList.setVisibility(View.INVISIBLE);
+                selfie.setVisibility(View.INVISIBLE);
                 recyclerList.setVisibility(View.VISIBLE);
                 recyclerList.startAnimation(AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_in));
             }
@@ -244,10 +250,11 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
 
             }
         });
-        circularList.startAnimation(moveRight);
+        circularList.startAnimation(fadeOut);
+        selfie.startAnimation(AnimationUtils.loadAnimation(this , R.anim.fade_out));
     }
 
-    private void search(){
+    private void search() {
         // hide list
         isDone = false;
         cancelBtn.setText("取消");
@@ -256,76 +263,159 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
         waitingTV.setVisibility(View.VISIBLE);
         circularList.setVisibility(View.INVISIBLE);
         recyclerList.setVisibility(View.INVISIBLE);
+        selfie.setVisibility(View.INVISIBLE);
+
+        //load selfie
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Picasso.get().load(documentSnapshot.getString("selfiePath"))
+                                //圖片使用最低分辨率,降低使用空間大小
+                                .fit()
+                                .centerCrop()
+                                .into(selfie);//取得大頭貼
+                    }
+                });
 
         //update location
-        Map<String , Object> update = new HashMap<>();
-        update.put("position" , new GeoPoint(latitude , longitude));
+        Map<String, Object> update = new HashMap<>();
+        update.put("position", new GeoPoint(latitude, longitude));
         firestore.collection("User").document(auth.getCurrentUser().getUid())
                 .update(update);
+
         //load other location
         posUserCircularList = new ArrayList<>();
         posUserRecyclerList = new ArrayList<>();
-        firestore.collection("User").get()
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Friends").get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                            if(!documentSnapshot.getId().equals(auth.getCurrentUser().getUid())){
-                                if(documentSnapshot.get("position" , GeoPoint.class) !=null){
+                        //add friendUIDList
+                        final List<String> friendUIDList = new ArrayList<>();
+                        for (DocumentSnapshot friendDoc : queryDocumentSnapshots) {
+                            friendUIDList.add(friendDoc.getId());
+                        }
 
-                                    posUserCircularList.add(new ItemPosUserCircular(documentSnapshot.getId() ,
-                                            documentSnapshot.getString("name") ,
-                                            documentSnapshot.getString("selfiePath"),
-                                            new GeoPoint(latitude , longitude) ,
-                                            documentSnapshot.get("position" , GeoPoint.class)));
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends").get()
+                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                        //add friendUIDList
+                                        for (DocumentSnapshot friendDoc : queryDocumentSnapshots) {
+                                            friendUIDList.add(friendDoc.getId());
+                                        }
 
-                                    posUserRecyclerList.add(new ItemPosUserRecycler(documentSnapshot.getId() ,
-                                            documentSnapshot.getString("name") ,
-                                            documentSnapshot.getString("selfiePath"),
-                                            new GeoPoint(latitude , longitude) ,
-                                            documentSnapshot.get("position" , GeoPoint.class)));
-                                    Collections.sort(posUserRecyclerList , new ItemPosUserComparator());
-                                }
-                            }
-                        }
-                        List<ItemPosUserCircular> circularResult = new ArrayList<>();
-                        List<ItemPosUserRecycler> recyclerResult = new ArrayList<>();
-                        //load complete 最多找出10位附近的使用者
-                        for(ItemPosUserCircular posUser : posUserCircularList){
-                            //找出5公里以內user
-                            if(posUser.getDistance() <= 5){
-                                if(circularResult.size() < 10){
-                                    circularResult.add(posUser);
-                                }
-                            }
-                        }
-                        for(ItemPosUserRecycler posUser : posUserRecyclerList){
-                            //找出5公里以內user
-                            if(posUser.getDistance() <= 5){
-                                if(recyclerResult.size() < 10){
-                                    recyclerResult.add(posUser);
-                                }
-                            }
-                        }
-                        buildShowTask(circularResult , recyclerResult);
-                        showTask.activateTask(2000 , 1000);
+                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List").get()
+                                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                        //add blockList
+                                                        final ArrayList<String> blockList = new ArrayList<>();
+                                                        for (DocumentSnapshot blockDoc : queryDocumentSnapshots) {
+                                                            blockList.add(blockDoc.getId());
+                                                        }
+
+                                                        firestore.collection("User").get()
+                                                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                                    @Override
+                                                                    public void onSuccess(final QuerySnapshot userQueryDoc) {
+
+                                                                        int i = 0;//查詢次數
+                                                                        for (final DocumentSnapshot userDoc : userQueryDoc) {
+                                                                            i++;
+                                                                            final int finalI = i;
+                                                                            if (!userDoc.getId().equals(auth.getCurrentUser().getUid())) {
+                                                                                userDoc.getReference().collection("Block_List").get()
+                                                                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                                                            @Override
+                                                                                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                                                                                                boolean isFriend = false;
+                                                                                                boolean isBlocked = false;
+
+                                                                                                //判斷對方是否封鎖自己
+                                                                                                for (DocumentSnapshot userBlockDoc : queryDocumentSnapshots) {
+                                                                                                    if (userBlockDoc.getId().equals(auth.getCurrentUser().getUid())) {
+                                                                                                        isBlocked = true;
+                                                                                                        break;
+                                                                                                    }
+                                                                                                }
+
+                                                                                                //判斷是否已成為朋友
+                                                                                                for (String friendUID : friendUIDList) {
+                                                                                                    if (friendUID.equals(userDoc.getId())) {
+                                                                                                        isFriend = true;
+                                                                                                        break;
+                                                                                                    }
+                                                                                                }
+
+                                                                                                //判斷對方是否已被封鎖
+                                                                                                for (String blockID : blockList)
+                                                                                                    if (blockID.equals(userDoc.getId())) {
+                                                                                                        isBlocked = true;
+                                                                                                        break;
+                                                                                                    }
+
+                                                                                                if (!isFriend && !isBlocked) {
+                                                                                                    //load user data
+                                                                                                    try {
+                                                                                                        posUserCircularList.add(new ItemPosUserCircular(userDoc.getId(),
+                                                                                                                userDoc.getString("name"),
+                                                                                                                userDoc.getString("selfiePath"),
+                                                                                                                new GeoPoint(latitude, longitude),
+                                                                                                                userDoc.get("position", GeoPoint.class)));
+
+                                                                                                        posUserRecyclerList.add(new ItemPosUserRecycler(userDoc.getId(),
+                                                                                                                userDoc.getString("name"),
+                                                                                                                userDoc.getString("selfiePath"),
+                                                                                                                new GeoPoint(latitude, longitude),
+                                                                                                                userDoc.get("position", GeoPoint.class)));
+                                                                                                        Collections.sort(posUserRecyclerList, new ItemPosUserComparator());
+                                                                                                    } catch (Exception e) {
+                                                                                                        Log.e("loadPosError", e.toString());
+                                                                                                    }
+                                                                                                }
+                                                                                                //load complete 最多找出8位5公里以內的使用者
+                                                                                                if (finalI == userQueryDoc.getDocuments().size()) {
+                                                                                                    final List<ItemPosUserCircular> circularResult = new ArrayList<>();
+                                                                                                    final List<ItemPosUserRecycler> recyclerResult = new ArrayList<>();
+                                                                                                    for (ItemPosUserCircular posUser : posUserCircularList) {
+                                                                                                        //找出5公里以內user
+                                                                                                        if (posUser.getDistance() <= 5) {
+                                                                                                            if (circularResult.size() < 8) {
+                                                                                                                circularResult.add(posUser);
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                    for (ItemPosUserRecycler posUser : posUserRecyclerList) {
+                                                                                                        //找出5公里以內user
+                                                                                                        if (posUser.getDistance() <= 5) {
+                                                                                                            if (recyclerResult.size() < 8) {
+                                                                                                                recyclerResult.add(posUser);
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                    new Handler().postDelayed(new Runnable() {
+                                                                                                        @Override
+                                                                                                        public void run() {
+                                                                                                            showResult(circularResult, recyclerResult);
+                                                                                                        }
+                                                                                                    }, 2000);
+                                                                                                }
+                                                                                            }
+                                                                                        });
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                    }
+                                                });
+                                    }
+                                });
                     }
                 });
-    }
-
-    private void buildShowTask(final List<ItemPosUserCircular> circularResult , final List<ItemPosUserRecycler> recyclerResult){
-        showTask = new Task(new Timer(), new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showResult(circularResult , recyclerResult);
-                    }
-                });
-                showTask.disableTask();
-            }
-        });
     }
 
     private void showResult (final List<ItemPosUserCircular> circularResult , final List<ItemPosUserRecycler> recyclerResult){
@@ -335,6 +425,7 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
         cancelBtn.setText("重新搜尋");
         sortBtn.setVisibility(View.VISIBLE);
         circularList.setVisibility(View.VISIBLE);
+        selfie.setVisibility(View.VISIBLE);
 
         if(!listIsInitialize){
             //初次搜尋
@@ -345,7 +436,11 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
             circularList.setOnItemClickListener(new CircularTouchListener.CircularItemClickListener() {
                 @Override
                 public void onItemClick(View view, int i) {
-                    Toast.makeText(getApplicationContext() , circularResult.get(i).getUID() , Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(getApplicationContext() , InvitationActivity.class);
+                    intent.putExtra("UID" , circularResult.get(i).getUID());
+                    intent.putExtra("distance" , new TextProcessor().doubleFormat("#.##" , circularResult.get(i).getDistance()));
+                    intent.putExtra("type" , "invite");
+                    startActivity(intent);
                 }
             });
             //recyclerList
@@ -354,6 +449,16 @@ public class PosSearchWaiting extends AppCompatActivity implements View.OnClickL
             recyclerPosUserAdapter = new RecyclerPosUserAdapter(recyclerResult);
             recyclerList.setLayoutManager(layoutManager);
             recyclerList.setAdapter(recyclerPosUserAdapter);
+            recyclerPosUserAdapter.setOnItemClickListener(new RecyclerPosUserAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(int position) {
+                    Intent intent = new Intent(getApplicationContext() , InvitationActivity.class);
+                    intent.putExtra("UID" , recyclerResult.get(position).getUID());
+                    intent.putExtra("distance" , new TextProcessor().doubleFormat("#.##" , recyclerResult.get(position).getDistance()));
+                    intent.putExtra("type" , "invite");
+                    startActivity(intent);
+                }
+            });
         }else {
             //重新搜尋
             //add circular list

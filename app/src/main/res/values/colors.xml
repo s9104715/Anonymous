@@ -7,6 +7,8 @@
     <color name="gray">#AAAAAA</color>
     <color name="transparent">#00000000</color>
     <color name="green">#66DD00</color>
+    <color name="yellow">#FFCC22</color>
+    <color name="red">#FF3333	</color>
 
     <!--setting-->
     <color name = "profile_setting_color">#FF8800</color>

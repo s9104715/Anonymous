@@ -4,8 +4,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -65,14 +67,14 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     private View mainCoverView;
     private View botCoverView;
 
+    private String CHAT_ROOM_TYPE;//分為RandomChatRoom , PosSearchChatRoom 兩種
+    private String FRIEND_TYPE;//分為Random_Friends , Pos_Search_Friends 兩種
     private String chatRoomID;
     private String mySelfiePath;
     private String otherSelfiePath;
 
     //監聽對方訊息
     private Task msgSonarTask;
-    //RecyclerView下拉至底部(載入圖片需耗時，等待載入完成所用)
-    private Task listScrollToBotTask;
 
     //camera and Gallery
     private File imgFile;
@@ -109,10 +111,12 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         firestore = FirebaseFirestore.getInstance();
         storageRef = FirebaseStorage.getInstance().getReference();
 
-        setupTopToolBar();
+        CHAT_ROOM_TYPE = getIntent().getExtras().getString("chat_room_type");
+        FRIEND_TYPE = getIntent().getExtras().getString("friend_type");
         loadMsg();
         buildMsgSonarTask();
         msgSonarTask.activateTask(1000 , 1000);
+        setupTopToolBar();
     }
 
     @Override
@@ -222,7 +226,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                         otherSelfiePath = documentSnapshot.getString("selfiePath");
                                         //載入對話
                                         chatList = new ArrayList<>();
-                                        firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                                        firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).collection("conversation")
                                                 .orderBy("index" , Query.Direction.ASCENDING)
                                                 .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                             @Override
@@ -248,7 +252,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                     }
                                                 }
                                                 //userHasLeft
-                                                firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                                firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                                                         .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                                             @Override
                                                             public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -278,8 +282,13 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         list.setAdapter(chatAdapter);
         list.getRecycledViewPool().setMaxRecycledViews(0 ,0);//防止丟失數據
         list.scrollToPosition(chatList.size()-1);//自動滾動到底部
-        buildListScrollToBotTask();
-        listScrollToBotTask.activateTask(2500 , 1000);
+        //RecyclerView下拉至底部(載入圖片需耗時，等待載入完成所用)
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                list.scrollToPosition(chatList.size()-1);//自動滾動到底部
+            }
+        } , 2500);
 
         chatAdapter.setOnItemClickListener(new ChatAdapter.OnItemClickListener() {
             @Override
@@ -293,13 +302,13 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
 
     //更新已讀數(更新自己的就好)
     private void updateReadLine(){
-        firestore.collection("RandomChatRoom").document(chatRoomID).get()
+        firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         Map<String , Object> update = new HashMap<>();
                         update.put("readLine", documentSnapshot.get("lineNum" , Integer.class));
-                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection(FRIEND_TYPE)
                                 .document(getIntent().getExtras().getString("otherUID")).update(update);
                     }
                 });
@@ -311,10 +320,10 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         Map<String , Object> update = new HashMap<>();
         update.put("lastTime", timestamp);
         //update my Random_Friends lastTime
-        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection(FRIEND_TYPE)
                 .document(otherUID).update(update);
         //update other Random_Friends lastTime
-        firestore.collection("User").document(otherUID).collection("Random_Friends")
+        firestore.collection("User").document(otherUID).collection(FRIEND_TYPE)
                 .document(auth.getCurrentUser().getUid()).update(update);
     }
 
@@ -324,10 +333,10 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         Map<String , Object> update = new HashMap<>();
         update.put("lastLine", lastLine);
         //update my Random_Friends lastLine
-        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection(FRIEND_TYPE)
                 .document(otherUID).update(update);
         //update other Random_Friends lastLine
-        firestore.collection("User").document(otherUID).collection("Random_Friends")
+        firestore.collection("User").document(otherUID).collection(FRIEND_TYPE)
                 .document(auth.getCurrentUser().getUid()).update(update);
     }
 
@@ -338,7 +347,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
             inputET.setError("請輸入想傳送的訊息！");
             inputET.requestFocus();
         }else {
-            firestore.collection("RandomChatRoom").document(chatRoomID).get()
+            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
                         public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -363,14 +372,14 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                             update.put("userUID" , auth.getCurrentUser().getUid());
                             update.put("text" , lastLine);
                             update.put("time" , lastTime);
-                            firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).collection("conversation")
                                     .document(String.valueOf(lineNum)).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     //修改lineNum
                                     Map<String , Object> update = new HashMap<>();
                                     update.put("lineNum", (lineNum + 1));
-                                    firestore.collection("RandomChatRoom").document(chatRoomID)
+                                    firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID)
                                             .update(update);
                                     //更新已讀數
                                     updateReadLine();
@@ -390,13 +399,13 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         msgSonarTask = new Task(new Timer(), new TimerTask() {
             @Override
             public void run() {
-                firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                         .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                 final int lineNum = documentSnapshot.get("lineNum" , Integer.class);
                                 Log.e("listen lineNum", ""+lineNum);
-                                firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation").document(String.valueOf(lineNum))
+                                firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).collection("conversation").document(String.valueOf(lineNum))
                                         .get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                     @Override
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -432,23 +441,6 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         });
     }
 
-    //等待圖片載入之後下拉
-    private void buildListScrollToBotTask(){
-        listScrollToBotTask = new Task(new Timer(), new TimerTask() {
-            @Override
-            public void run() {
-                Log.e("scrollList" , "success");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        list.scrollToPosition(chatList.size()-1);//自動滾動到底部
-                    }
-                });
-                listScrollToBotTask.disableTask();
-            }
-        });
-    }
-
     private void block(){
         AlertDialog blockAD = new AlertDialog.Builder(this)
                 .setTitle("封鎖好友")
@@ -469,15 +461,15 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                             @Override
                                             public void onSuccess(Void aVoid) {
                                                 //DB delete Random_Friends
-                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection(FRIEND_TYPE)
                                                         .document(friendsDocumentSnapshot.getId()).delete();
                                                 //DB chatRoom
-                                                firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                                                firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                                                         .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                                             @Override
                                                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                                                 if(documentSnapshot.getBoolean("userHasLeft")!=null){
-                                                                    firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                                                                    firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).collection("conversation")
                                                                             .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                                                         @Override
                                                                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -486,7 +478,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                                                 conversationDocumentSnapshot.getReference().delete();
                                                                             }
                                                                             //delete chatRoom
-                                                                            firestore.collection("RandomChatRoom").document(chatRoomID).delete()
+                                                                            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).delete()
                                                                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                                         @Override
                                                                                         public void onSuccess(Void aVoid) {
@@ -499,7 +491,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                                     //update chatRoom
                                                                     Map<String , Object> update = new HashMap<>();
                                                                     update.put("userHasLeft" , true);
-                                                                    firestore.collection("RandomChatRoom").document(chatRoomID)
+                                                                    firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID)
                                                                             .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                         @Override
                                                                         public void onSuccess(Void aVoid) {
@@ -534,16 +526,16 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                     public void onClick(DialogInterface dialogInterface, int i) {
                         msgSonarTask.disableTask();
                         //DB delete Random_Friends
-                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection(FRIEND_TYPE)
                                 .document(getIntent().getExtras().getString("otherUID")).delete();
                         //DB chatRoom
-                        firestore.collection("RandomChatRoom").document(chatRoomID).get()
+                        firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                     @Override
                                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                                         if(documentSnapshot.getBoolean("userHasLeft")!=null){
                                             //delete chatRoom
-                                            firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                                            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).collection("conversation")
                                                     .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                                 @Override
                                                 public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -552,7 +544,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                                         conversationDocumentSnapshot.getReference().delete();
                                                     }
                                                     //delete chatRoom
-                                                    firestore.collection("RandomChatRoom").document(chatRoomID).delete()
+                                                    firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).delete()
                                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                                 @Override
                                                                 public void onSuccess(Void aVoid) {
@@ -565,7 +557,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                             //update chatRoom
                                             Map<String , Object> update = new HashMap<>();
                                             update.put("userHasLeft" , true);
-                                            firestore.collection("RandomChatRoom").document(chatRoomID)
+                                            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID)
                                                     .update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
@@ -659,7 +651,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         imgFile = new File(getExternalCacheDir(),
                 (System.currentTimeMillis()) + ".jpg");
-        imgUri = Uri.fromFile(imgFile);
+        imgUri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".provider", imgFile);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
         startActivityForResult(intent, Code.CAMERA_REQUEST);
     }
@@ -685,7 +677,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         }
         if (uri != null) {
             //output
-            ItemChat itemChat = new ItemChat(chatList.get(chatList.size() - 1).getIndex(),
+            ItemChat itemChat = new ItemChat(chatList.size(),
                     auth.getCurrentUser().getUid() ,
                     mySelfiePath ,
                     otherSelfiePath ,
@@ -698,7 +690,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
             String fileName = new RandomCode().generateCode(8);
             final StorageReference imgRef = storageRef.child("RandomChatRoom/" +chatRoomID+"/"+auth.getCurrentUser().getUid()+"/"+fileName+".png");//圖片存放路徑
             final Uri finalUri = uri;
-            firestore.collection("RandomChatRoom").document(chatRoomID).get()
+            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).get()
                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                         @Override
                         public void onSuccess(final DocumentSnapshot documentSnapshot) {
@@ -719,14 +711,14 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                                             update.put("text" , "");
                                             update.put("imgUrl" , uri.toString());
                                             update.put("time" , new MyTime().getCurrentTime());
-                                            firestore.collection("RandomChatRoom").document(chatRoomID).collection("conversation")
+                                            firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID).collection("conversation")
                                                     .document(String.valueOf(lineNum)).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
                                                     //修改lineNum
                                                     Map<String , Object> update = new HashMap<>();
                                                     update.put("lineNum", (lineNum + 1));
-                                                    firestore.collection("RandomChatRoom").document(chatRoomID)
+                                                    firestore.collection(CHAT_ROOM_TYPE).document(chatRoomID)
                                                             .update(update);
                                                     //更新已讀數
                                                     updateReadLine();

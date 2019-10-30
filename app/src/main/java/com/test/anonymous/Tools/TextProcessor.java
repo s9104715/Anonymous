@@ -1,5 +1,7 @@
 package com.test.anonymous.Tools;
 
+import java.text.DecimalFormat;
+
 public class TextProcessor {
 
     public TextProcessor() {
@@ -29,5 +31,9 @@ public class TextProcessor {
             sb.insert(sb.length() , "......");
         }
         return sb.toString();
+    }
+
+    public String doubleFormat(String pattern , Double d){
+        return new DecimalFormat(pattern).format(d);
     }
 }

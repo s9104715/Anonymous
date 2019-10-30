@@ -16,26 +16,35 @@
         android:layout_marginBottom="60dp">
     </android.support.v7.widget.RecyclerView>
 
-    <ImageView
-        android:id="@+id/no_friends_img"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:src="@drawable/no_friends"
-        app:layout_constraintTop_toTopOf="@id/list"
-        app:layout_constraintLeft_toLeftOf="@id/list"
-        app:layout_constraintRight_toRightOf="@id/list"
-        app:layout_constraintBottom_toBottomOf="@id/list"
-        android:visibility="gone"/>
-
-    <TextView
-        android:id="@+id/no_friends_TV"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/no_friends"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="您目前還沒有朋友喔！"
-        app:layout_constraintTop_toBottomOf="@id/no_friends_img"
-        app:layout_constraintLeft_toLeftOf="@id/no_friends_img"
-        app:layout_constraintRight_toRightOf="@id/no_friends_img"
-        android:visibility="gone"/>
+        app:layout_constraintTop_toTopOf="@id/list"
+        app:layout_constraintBottom_toBottomOf="@id/list"
+        app:layout_constraintLeft_toLeftOf="@id/list"
+        app:layout_constraintRight_toRightOf="@id/list"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/no_friends_img"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/no_friends"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <TextView
+            android:id="@+id/no_friends_TV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="您目前還沒有朋友喔！"
+            app:layout_constraintTop_toBottomOf="@id/no_friends_img"
+            app:layout_constraintLeft_toLeftOf="@id/no_friends_img"
+            app:layout_constraintRight_toRightOf="@id/no_friends_img" />
+
+    </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/btn_container"

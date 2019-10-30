@@ -159,16 +159,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             case R.id.other_log_btn:
                     //anim :  show signInBtn
                 if(!googleSignInBtn.isClickable()){
-                    googleSignInBtn.setClickable(true);
-                    googleSignInBtn.setVisibility(View.VISIBLE);
-                    googleSignInBtn.startAnimation(fadeInAnim);
-                    fbSignInBtn.setClickable(true);
-                    fbSignInBtn.setVisibility(View.VISIBLE);
-                    fbSignInBtn.startAnimation(fadeInAnim);
+                    showSignInBtn();
                     //enable fb btn
                     setupFbSignInBtn();
                 }
-
                 break;
             case R.id.google_login_btn:
                 //log with google
@@ -247,6 +241,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             accET.setText((CharSequence) Paper.book().read("acc"));
             pwdET.setText((CharSequence) Paper.book().read("pwd"));
         }
+    }
+
+    private void showSignInBtn(){
+        googleSignInBtn.setClickable(true);
+        googleSignInBtn.setVisibility(View.VISIBLE);
+        googleSignInBtn.startAnimation(fadeInAnim);
+        fbSignInBtn.setClickable(true);
+        fbSignInBtn.setVisibility(View.VISIBLE);
+        fbSignInBtn.startAnimation(fadeInAnim);
     }
 
     //已google帳號登入

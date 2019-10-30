@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -48,8 +49,8 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private CircleImageView selfie;
     private CircleButton editSelfieBtn;
-    private EditText nameET , ageET;
-    private ImageView editNameBtn , editAgeBtn , editCareerBtn , fixCareerBtn , editHobbyBtn , fixHobbyBtn ,  backBtn;
+    private EditText nameET , ageET , introET;
+    private ImageView editNameBtn , editAgeBtn , editCareerBtn , fixCareerBtn , editHobbyBtn , fixHobbyBtn ,  editIntroBtn , backBtn;
     private RadioGroup genderRG;
     private View genderCoverView;
     //career list
@@ -89,12 +90,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         editSelfieBtn = findViewById(R.id.edit_selfie_btn);
         nameET = findViewById(R.id.name_ET);
         ageET = findViewById(R.id.age_ET);
+        introET = findViewById(R.id.intro_ET);
         editNameBtn = findViewById(R.id.edit_name_btn);
         editAgeBtn = findViewById(R.id.edit_age_btn);
         editCareerBtn = findViewById(R.id.edit_career_btn);
         editHobbyBtn = findViewById(R.id.edit_hobby_btn);
         fixCareerBtn = findViewById(R.id.fix_edit_career_btn);
         fixHobbyBtn = findViewById(R.id.fix_edit_hobby_btn);
+        editIntroBtn = findViewById(R.id.edit_intro_btn);
         backBtn = findViewById(R.id.back_btn);
         careerList = findViewById(R.id.career_list);
         hobbyList = findViewById(R.id.hobby_list);
@@ -110,6 +113,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         editHobbyBtn.setOnClickListener(this);
         fixCareerBtn.setOnClickListener(this);
         fixHobbyBtn.setOnClickListener(this);
+        editIntroBtn.setOnClickListener(this);
         backBtn.setOnClickListener(this);
         genderCoverView.setOnClickListener(this);
 
@@ -144,6 +148,9 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.fix_edit_hobby_btn:
                 doneEditHobby();
                 break;
+            case R.id.edit_intro_btn:
+                editIntro();
+                break;
             case R.id.back_btn:
                 onBackPressed();
                 break;
@@ -171,9 +178,11 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 }else {
                     genderRG.check(R.id.female_RB);
                 }
+                introET.setText(documentSnapshot.getString("intro"));
                 nameET.setEnabled(false);
                 ageET.setEnabled(false);
                 genderRG.setEnabled(false);
+                introET.setEnabled(false);
             }
         });
         //career list
@@ -251,7 +260,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 selfieFile = new File(getExternalCacheDir(),
                         String.valueOf(System.currentTimeMillis()) + ".jpg");
-                selfieUri = Uri.fromFile(selfieFile);
+                selfieUri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".provider", selfieFile);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, selfieUri);
                 startActivityForResult(intent, Code.CAMERA_REQUEST);
             }
@@ -341,8 +350,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         //姓名經過更動才需寫入
                         if(!documentSnapshot.getString("name").equals(name)){
-                            documentSnapshot.getReference().update(update);
-                            Toast.makeText(getApplicationContext() , "修改完成", Toast.LENGTH_LONG).show();
+                            documentSnapshot.getReference().update(update)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(getApplicationContext() , "修改完成", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                         }
                     }
                 });
@@ -376,8 +390,13 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         //姓名經過更動才需寫入
                         if(documentSnapshot.get("age" , Integer.TYPE) != age){
-                            documentSnapshot.getReference().update(update);
-                            Toast.makeText(getApplicationContext() , "修改完成", Toast.LENGTH_LONG).show();
+                            documentSnapshot.getReference().update(update)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(getApplicationContext() , "修改完成", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                         }
                     }
                 });
@@ -609,6 +628,38 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 }
             });
         }
+    }
+
+    private void editIntro(){
+        if(!introET.isEnabled()){
+            introET.setEnabled(true);
+            editIntroBtn.setImageDrawable(getResources().getDrawable(R.drawable.done));
+            new Keyboard(getSystemService(INPUT_METHOD_SERVICE) , introET).show();
+        }else {
+            updateIntro(introET.getText().toString().trim());
+            introET.setEnabled(false);
+            editIntroBtn.setImageDrawable(getResources().getDrawable(R.drawable.edit));
+        }
+    }
+
+    private void updateIntro(final String intro){
+        final Map<String , Object> update = new HashMap<>();
+        update.put("intro" , intro);
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(!intro.equals(documentSnapshot.getString("intro"))){
+                            documentSnapshot.getReference().update(update)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(getApplicationContext() , "修改完成", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                        }
+                    }
+                });
     }
 
     @Override

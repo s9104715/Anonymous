@@ -152,10 +152,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_sign_out) {
-            //登出
-            showSignOutDialog();
-            //3秒後登出及結束MainActivity回到LoginActivity
-            dismissSignOutDialog(signOutPD , 3000);
+           signOut();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -242,17 +239,11 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    private void showSignOutDialog(){
-        signOutPD = new ProgressDialog(this);
-        signOutPD.setCancelable(false);
-        signOutPD.setCanceledOnTouchOutside(false);
-        signOutPD.setTitle("登出");
-        signOutPD.setMessage("登出中.....");
-        signOutPD.show();
-    }
-
-    private void dismissSignOutDialog(final ProgressDialog progressDialog , int delayMillis){
-        Runnable progressRunnable = new Runnable() {
+    private void signOut(){
+        //登出
+        showSignOutDialog();
+        //3秒後登出及結束MainActivity回到LoginActivity
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 //fb登出
@@ -262,12 +253,18 @@ public class MainActivity extends AppCompatActivity
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(MainActivity.this , LoginActivity.class));
                 finish();
-                progressDialog.dismiss();
+                signOutPD.dismiss();
             }
-        };
+        } , 3000);
+    }
 
-        Handler pdCanceller = new Handler();
-        pdCanceller.postDelayed(progressRunnable, delayMillis);//毫秒計算
+    private void showSignOutDialog(){
+        signOutPD = new ProgressDialog(this);
+        signOutPD.setCancelable(false);
+        signOutPD.setCanceledOnTouchOutside(false);
+        signOutPD.setTitle("登出");
+        signOutPD.setMessage("登出中.....");
+        signOutPD.show();
     }
 
     //讓新用戶於建立完帳號後更新性別年齡等資料
