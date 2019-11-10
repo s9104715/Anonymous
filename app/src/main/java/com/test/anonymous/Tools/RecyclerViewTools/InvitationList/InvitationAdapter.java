@@ -119,9 +119,25 @@ public class InvitationAdapter extends RecyclerView.Adapter<InvitationAdapter.Ba
         this.longClickListener = longClickListener;
     }
 
+    public List<ItemInvitation> getList() {
+        return list;
+    }
+
     //如果讀取單筆邀請則newInvitation gone
     public void read(int position){
         list.get(position).setRead(true);
         notifyItemChanged(position);
+    }
+
+    public void delete(int position){
+        list.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void clear(){
+        for(int i= list.size() - 1 ; i >= 0  ; i --){
+            list.remove(i);
+            notifyItemRemoved(i);
+        }
     }
 }

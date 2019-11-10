@@ -1,28 +1,32 @@
 package com.test.anonymous.Main.FragmentPosSearch;
 
+
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
-
+import android.widget.Toast;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.test.anonymous.Main.FragmentRandomChat.ChatRoomActivity;
 import com.test.anonymous.R;
-import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
-import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
+import com.test.anonymous.Tools.MyTime;
+import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.RecyclerViewTools.InvitationList.InvitationAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.InvitationList.ItemInvitation;
 import com.test.anonymous.Tools.RecyclerViewTools.InvitationList.ItemInvitationComparator;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,7 +41,11 @@ public class InvitationBoxActivity extends AppCompatActivity {
     private InvitationAdapter invitationAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
-    private ConstraintLayout noinvitation;
+    private ConstraintLayout noInvitation;
+
+    private AlertDialog onLongClickAD;
+    private ProgressDialog acceptPD;
+    private ProgressDialog refusePD;
 
     //Firebase
     private FirebaseAuth auth;
@@ -52,13 +60,12 @@ public class InvitationBoxActivity extends AppCompatActivity {
         setContentView(R.layout.app_bar_invitation_box);
 
         list = findViewById(R.id.list);
-        noinvitation = findViewById(R.id.no_invitation);
+        noInvitation = findViewById(R.id.no_invitation);
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
         instance = this;
-        loadInvitation();
         setupTopToolBar();
     }
 
@@ -66,6 +73,12 @@ public class InvitationBoxActivity extends AppCompatActivity {
     public void finish() {
         super.finish();
         instance = null;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadInvitation();
     }
 
     private void setupTopToolBar() {
@@ -84,14 +97,19 @@ public class InvitationBoxActivity extends AppCompatActivity {
 
     private void loadInvitation() {
         //load Pos_Search_Invitation
-        if(getIntent().getExtras().getInt("inviteNum") == 0){
-            noinvitation.setVisibility(View.VISIBLE);
-        }else {
-            invitations = new ArrayList<>();
-            firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Invitation").get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                        @Override
-                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+        try{
+            invitationAdapter.clear();
+        }catch (Exception e){
+            Log.e("clearError" , e.toString());
+        }
+        invitations = new ArrayList<>();
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Invitation").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if(queryDocumentSnapshots.isEmpty()){
+                            noInvitation.setVisibility(View.VISIBLE);
+                        }else {
                             for (final DocumentSnapshot invitationDoc : queryDocumentSnapshots) {
                                 //load inviter data
                                 firestore.collection("User").document(invitationDoc.getId()).get()
@@ -115,8 +133,8 @@ public class InvitationBoxActivity extends AppCompatActivity {
                                         });
                             }
                         }
-                    });
-        }
+                    }
+                });
     }
 
     private void read(){
@@ -136,57 +154,166 @@ public class InvitationBoxActivity extends AppCompatActivity {
 
     private void setupRecyclerView () {
 
-        list.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(this);
-        invitationAdapter = new InvitationAdapter(invitations);
-        list.setLayoutManager(layoutManager);
-        list.setAdapter(invitationAdapter);
+            list.setHasFixedSize(true);
+            layoutManager = new LinearLayoutManager(this);
+            invitationAdapter = new InvitationAdapter(invitations);
+            list.setLayoutManager(layoutManager);
+            list.setAdapter(invitationAdapter);
 
-        invitationAdapter.setOnItemClickListener(new InvitationAdapter.OnItemClickListener() {
+            invitationAdapter.setOnItemClickListener(new InvitationAdapter.OnItemClickListener() {
+                @Override
+                public void onItemClick(int position) {
+                    //click method
+                    invitationAdapter.read(position);
+                    Intent intent = new Intent(getApplicationContext() , InvitationActivity.class);
+                    intent.putExtra("UID" , invitations.get(position).getUserUID());
+                    intent.putExtra("distance" , invitations.get(position).getDistance());
+                    intent.putExtra("type" , "accept");
+                    startActivity(intent);
+                }
+            });
+            invitationAdapter.setLongClickListener(new InvitationAdapter.OnItemLongClickListener() {
+                @Override
+                public void onItemLongClick(final int position) {
+                    View view = getLayoutInflater().inflate(R.layout.dialog_invitations_on_long_click_option , null);
+                    AlertDialog.Builder ADBuilder = new AlertDialog.Builder(InvitationBoxActivity.this)
+                            .setView(view);
+                    onLongClickAD = ADBuilder.create();
+                    onLongClickAD.show();
+                    view.findViewById(R.id.accept_btn).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onLongClickAD.dismiss();
+                            showAcceptDialog();
+                            accept(invitations.get(position).getUserUID() , invitations.get(position).getName());
+                        }
+                    });
+                    view.findViewById(R.id.refuse_btn).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onLongClickAD.dismiss();
+                            refuse(invitations.get(position).getUserUID() , position);
+                        }
+                    });
+                }
+            });
+        }
+
+    private void accept(final String UID , final String name){
+        showAcceptDialog();
+        new Handler().postDelayed(new Runnable() {
             @Override
-            public void onItemClick(int position) {
-                //click method
-                invitationAdapter.read(position);
-                Intent intent = new Intent(getApplicationContext() , InvitationActivity.class);
-                intent.putExtra("UID" , invitations.get(position).getUserUID());
-                intent.putExtra("distance" , invitations.get(position).getDistance());
-                intent.putExtra("type" , "accept");
-                startActivity(intent);
+            public void run() {
+                //create chat room
+                createChatRoom(UID , name);
             }
-        });
-//
-//        friendsAdapter.setLongClickListener(new FriendsAdapter.OnItemLongClickListener() {
-//            @Override
-//            public void onItemLongClick(final int position) {
-//                View view = getLayoutInflater().inflate(R.layout.dialog_friends_on_long_click_option , null);
-//                AlertDialog.Builder ADBuilder = new AlertDialog.Builder(getContext())
-//                        .setTitle(friends.get(position).getName())
-//                        .setView(view);
-//                friendsOnLongClickAD = ADBuilder.create();
-//                friendsOnLongClickAD.show();
-//                view.findViewById(R.id.edit_name_btn).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        friendsOnLongClickAD.dismiss();
-//                        editName(friends.get(position) , position);
-//                    }
-//                });
-//                view.findViewById(R.id.block_btn).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        friendsOnLongClickAD.dismiss();
-//                        block(friends.get(position) , position);
-//                    }
-//                });
-//                view.findViewById(R.id.leave_btn).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        friendsOnLongClickAD.dismiss();
-//                        leave(friends.get(position) , position);
-//                    }
-//                });
-//            }
-//        });
-//    }
+        } , 2000);
+    }
+
+    private void showAcceptDialog() {
+        acceptPD = new ProgressDialog(this);
+        acceptPD.setCancelable(false);
+        acceptPD.setCanceledOnTouchOutside(false);
+        acceptPD.setTitle("接受");
+        acceptPD.setMessage("處理中.....");
+        acceptPD.show();
+    }
+
+    private void refuse(final String UID , final int position){
+        showRefuseDialog();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Invitation").document(UID)
+                        .delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                refusePD.dismiss();
+                                invitationAdapter.delete(position);
+                                if(invitationAdapter.getList().size()==0){
+                                    noInvitation.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        });
+            }
+        } , 2000);
+    }
+
+    private void showRefuseDialog() {
+        refusePD = new ProgressDialog(this);
+        refusePD.setCancelable(false);
+        refusePD.setCanceledOnTouchOutside(false);
+        refusePD.setTitle("拒絕");
+        refusePD.setMessage("處理中.....");
+        refusePD.show();
+    }
+
+    private void createChatRoom(final String UID , String name){
+
+        final String chatRoomID = new RandomCode().generateCode(8);//聊天室id
+        final Timestamp lastTime = new MyTime().getCurrentTime();//last time
+
+        final Map<String, Object> update = new HashMap<>();
+        update.put("chatRoomID", chatRoomID);
+        update.put("name" , name);
+        update.put("readLine" , 0);//已讀取句數
+        update.put("lastTime" , lastTime);
+        update.put("lastLine" , "");
+        //更新自己的朋友名單Pos_Search_Friends
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Friends")
+                .document(UID)
+                .set(update)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        final Map<String, Object> update = new HashMap<>();
+                                        update.put("chatRoomID", chatRoomID);
+                                        update.put("name" , documentSnapshot.getString("name"));
+                                        update.put("readLine" , 0);//已讀取句數
+                                        update.put("lastTime" , lastTime);
+                                        update.put("lastLine" , "");
+                                        //更新對方的朋友名單Pos_Search_Friends
+                                        firestore.collection("User").document(UID).collection("Pos_Search_Friends")
+                                                .document(auth.getCurrentUser().getUid())
+                                                .set(update)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        //createChatRoom
+                                                        //user1為自己 , user2為對方
+                                                        Map<String, Object> update = new HashMap<>();
+                                                        update.put("user1", auth.getCurrentUser().getUid());
+                                                        update.put("user2", UID);
+                                                        update.put("lineNum" , 0);
+                                                        firestore.collection("PosSearchChatRoom").document(chatRoomID).set(update)
+                                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                    @Override
+                                                                    public void onSuccess(Void aVoid) {
+                                                                        acceptPD.dismiss();
+                                                                        Intent intent = new Intent(getApplicationContext() , ChatRoomActivity.class);
+                                                                        intent.putExtra("chatRoomID" ,  chatRoomID )
+                                                                                .putExtra("myUID" , auth.getCurrentUser().getUid())
+                                                                                .putExtra("otherUID", UID)
+                                                                                .putExtra("chat_room_type" , "PosSearchChatRoom")
+                                                                                .putExtra("friend_type" , "Pos_Search_Friends");
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                        Toast.makeText(getApplicationContext(), "接受成功", Toast.LENGTH_LONG).show();
+                                                                    }
+                                                                });
+                                                        //delete invitation
+                                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Invitation")
+                                                                .document(UID).delete();
+                                                    }
+                                                });
+                                    }
+                                });
+                    }
+                });
     }
 }

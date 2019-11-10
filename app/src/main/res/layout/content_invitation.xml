@@ -305,17 +305,37 @@
             android:layout_marginTop="20dp"
             android:background="@drawable/btn_style_blue"/>
 
+            <android.support.constraint.Guideline
+                android:id="@id/line3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5"/>
+
             <Button
                 android:id="@+id/accept_btn"
-                android:layout_width="150dp"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:text="接受邀請"
                 android:textColor="@color/white"
                 app:layout_constraintTop_toBottomOf="@id/hobby_card"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/line3"
                 android:layout_marginTop="20dp"
+                android:layout_marginRight="5dp"
                 android:background="@drawable/btn_style_green"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/refuse_btn"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="拒絕邀請"
+                android:textColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/hobby_card"
+                app:layout_constraintLeft_toRightOf="@id/line3"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/btn_style_red"
                 android:visibility="gone"/>
 
         </android.support.constraint.ConstraintLayout>

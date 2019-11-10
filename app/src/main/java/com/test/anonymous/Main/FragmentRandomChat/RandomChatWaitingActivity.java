@@ -33,7 +33,7 @@ import java.util.TimerTask;
 /*使用者依hasMatcher的狀況分為兩角色
         true則為Finder
         false則為Matcher*/
-public class RandomChatWaiting extends AppCompatActivity implements View.OnClickListener {
+public class RandomChatWaitingActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView backBtn;
     //waitingBar
@@ -167,7 +167,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                             @Override
                             public void onSuccess(final DocumentSnapshot documentSnapshot) {
                                 if(documentSnapshot.exists()){
-                                    Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
+                                    Intent intent = new Intent(RandomChatWaitingActivity.this , ChatRoomActivity.class);
                                     intent.putExtra("chatRoomID" ,  documentSnapshot.getString("chatRoomID"))
                                             .putExtra("myUID" , auth.getCurrentUser().getUid())
                                             .putExtra("otherUID" , matcherUID)
@@ -378,7 +378,7 @@ public class RandomChatWaiting extends AppCompatActivity implements View.OnClick
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Intent intent = new Intent(RandomChatWaiting.this , ChatRoomActivity.class);
+                        Intent intent = new Intent(RandomChatWaitingActivity.this , ChatRoomActivity.class);
                         intent.putExtra("chatRoomID" ,  chatRoomID )
                                     .putExtra("myUID" , user1)
                                     .putExtra("otherUID", user2)

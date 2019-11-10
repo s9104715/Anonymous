@@ -42,7 +42,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class PosSearchWaiting extends AppCompatActivity implements View.OnClickListener {
+public class PosSearchWaitingActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView backBtn , sortBtn;
     private CardView sortView;

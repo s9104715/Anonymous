@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,12 +18,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,7 +42,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import cc.cloudist.acplibrary.ACProgressConstant;
-import cc.cloudist.acplibrary.ACProgressFlower;
 
 public class FragmentRandomChat extends Fragment implements View.OnClickListener {
 
@@ -460,7 +454,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         firestore.collection("RandomMatch").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                Intent intent = new Intent(getContext() , RandomChatWaiting.class);
+                Intent intent = new Intent(getContext() , RandomChatWaitingActivity.class);
                 if(queryDocumentSnapshots.size() == 0 ){
                     //建立match的狀況(角色為Matcher)
                     intent.putExtra("hasMatcher" , false)

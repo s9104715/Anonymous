@@ -53,7 +53,7 @@
             android:theme="@style/AppTheme">
         </activity>
 
-        <activity android:name=".Main.FragmentRandomChat.RandomChatWaiting"
+        <activity android:name=".Main.FragmentRandomChat.RandomChatWaitingActivity"
             android:label="搜尋朋友"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -77,7 +77,7 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".Main.FragmentPosSearch.PosSearchWaiting"
+        <activity android:name=".Main.FragmentPosSearch.PosSearchWaitingActivity"
             android:label="搜尋朋友"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">

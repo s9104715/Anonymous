@@ -14,16 +14,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-import com.test.anonymous.Login.LoginActivity;
 import com.test.anonymous.Main.FragmentRandomChat.ChatRoomActivity;
-import com.test.anonymous.Main.FragmentRandomChat.RandomChatWaiting;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
@@ -41,7 +38,7 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
     private ImageView backBtn , reportBtn;
     private CircleImageView selfie;
     private TextView nameTV , distanceData , introTV , greatNum , notBadNum , badNum , infoTV;
-    private Button inviteBtn , acceptBtn;
+    private Button inviteBtn , acceptBtn , refuseBtn;
     //hobby list
     private List<ItemHobby> hobbies;
     private RecyclerView hobbyList;
@@ -50,6 +47,7 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
 
     private ProgressDialog invitePD;
     private ProgressDialog acceptPD;
+    private ProgressDialog refusePD;
 
     //Firebase
     private FirebaseAuth auth;
@@ -78,11 +76,13 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
         hobbyList = findViewById(R.id.hobby_list);
         inviteBtn = findViewById(R.id.invite_btn);
         acceptBtn = findViewById(R.id.accept_btn);
+        refuseBtn = findViewById(R.id.refuse_btn);
 
         backBtn.setOnClickListener(this);
         reportBtn.setOnClickListener(this);
         inviteBtn.setOnClickListener(this);
         acceptBtn.setOnClickListener(this);
+        refuseBtn.setOnClickListener(this);
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
@@ -110,6 +110,11 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
             case R.id.accept_btn:
                 if(ACTIVITY_TYPE.equals("accept")){
                     accept();
+                }
+                break;
+            case R.id.refuse_btn:
+                if(ACTIVITY_TYPE.equals("accept")){
+                    refuse();
                 }
                 break;
         }
@@ -152,6 +157,7 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
                         if(ACTIVITY_TYPE.equals("accept")){
                             inviteBtn.setVisibility(View.GONE);
                             acceptBtn.setVisibility(View.VISIBLE);
+                            refuseBtn.setVisibility(View.VISIBLE);
                         }
 
                         //invite btn 如果已經寄出邀請則disable
@@ -232,9 +238,37 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
         acceptPD.setCancelable(false);
         acceptPD.setCanceledOnTouchOutside(false);
         acceptPD.setTitle("接受");
-        acceptPD.setMessage("接受中.....");
+        acceptPD.setMessage("處理中.....");
         acceptPD.show();
     }
+
+    private void refuse(){
+        showRefuseDialog();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Invitation").document(UID)
+                        .delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                refusePD.dismiss();
+                                finish();
+                            }
+                        });
+            }
+        } , 2000);
+    }
+
+    private void showRefuseDialog() {
+        refusePD = new ProgressDialog(this);
+        refusePD.setCancelable(false);
+        refusePD.setCanceledOnTouchOutside(false);
+        refusePD.setTitle("拒絕");
+        refusePD.setMessage("處理中.....");
+        refusePD.show();
+    }
+
 
     private void createChatRoom(){
 

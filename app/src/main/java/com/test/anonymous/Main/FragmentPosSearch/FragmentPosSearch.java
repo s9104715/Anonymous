@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,8 +58,8 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
 
     private Button searchBtn;
     private CircleButton invitationBtn;
-    private RelativeLayout unReadNum;
-    private TextView unReadNumTV;
+    private RelativeLayout unRead;
+    private TextView unReadTV;
     private ConstraintLayout noFriends;
     private int inviteNum = 0;//邀請數
 
@@ -81,8 +79,8 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
         noFriends = view.findViewById(R.id.no_friends);
         searchBtn = view.findViewById(R.id.search_btn);
         invitationBtn = view.findViewById(R.id.invitation_btn);
-        unReadNum = view.findViewById(R.id.unRead_line_num);
-        unReadNumTV = view.findViewById(R.id.unRead_line_num_TV);
+        unRead = view.findViewById(R.id.unRead_line_num);
+        unReadTV = view.findViewById(R.id.unRead_line_num_TV);
 
         searchBtn.setOnClickListener(this);
         invitationBtn.setOnClickListener(this);
@@ -130,10 +128,10 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
                     }
                 }
                 if(unReadNum > 0){
-                    FragmentPosSearch.this.unReadNum.setVisibility(View.VISIBLE);
-                    unReadNumTV.setText(String.valueOf(unReadNum));
+                    unRead.setVisibility(View.VISIBLE);
+                    unReadTV.setText(String.valueOf(unReadNum));
                 }else {
-                    FragmentPosSearch.this.unReadNum.setVisibility(View.GONE);
+                    unRead.setVisibility(View.GONE);
                 }
             }
         });
@@ -178,7 +176,7 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
             @Override
             public void onSuccess(Location location) {
                 try {
-                    Intent intent = new Intent( getContext() , PosSearchWaiting.class);
+                    Intent intent = new Intent( getContext() , PosSearchWaitingActivity.class);
                     intent.putExtra("latitude" , location.getLatitude())
                             .putExtra("longitude" , location.getLongitude());
                     startActivity(intent);
@@ -202,7 +200,7 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
                 @Override
                 public void onSuccess(Location location) {
                     try {
-                        Intent intent = new Intent( getContext() , PosSearchWaiting.class);
+                        Intent intent = new Intent( getContext() , PosSearchWaitingActivity.class);
                         intent.putExtra("latitude" , location.getLatitude())
                                 .putExtra("longitude" , location.getLongitude());
                         startActivity(intent);
