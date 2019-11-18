@@ -1,4 +1,4 @@
-package com.test.anonymous.Main.FragmentRandomChat;
+package com.test.anonymous.Main;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
+
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,7 +34,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.test.anonymous.BrowseImgActivity;
 import com.test.anonymous.Tools.Code;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.Keyboard;
@@ -39,6 +41,8 @@ import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ChatAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.ChatList.ItemChat;
+import com.test.anonymous.Tools.RecyclerViewTools.TopicList.ItemTopic;
+import com.test.anonymous.Tools.RecyclerViewTools.TopicList.SendableTopicAdapter;
 import com.test.anonymous.Tools.Task;
 import java.io.File;
 import java.util.ArrayList;
@@ -56,13 +60,20 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     private List<ItemChat> chatList;
     private RecyclerView list;
     private ChatAdapter chatAdapter;
+    //TopicRecyclerView
+    private List<ItemTopic> topics;
+    private RecyclerView topicList;
+    private SendableTopicAdapter sendableTopicAdapter;
+    private ConstraintLayout topicLib;
+    private CircleButton hideBtn;
     private RecyclerView.LayoutManager layoutManager;
-    private CircleButton chatBtn , sendPicBtn;
+
+    private CircleButton chatBtn , optionBtn;
     private EditText inputET;
 
     //send pic view
     private CardView sendPicView;
-    private RelativeLayout cameraBtn  , galleryBtn;
+    private RelativeLayout cameraBtn  , galleryBtn , topicBtn;
     //cover view
     private View mainCoverView;
     private View botCoverView;
@@ -92,19 +103,25 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
 
         view = this.getCurrentFocus();
         list = findViewById(R.id.list);
+        topicList = findViewById(R.id.topic_list);
+        topicLib = findViewById(R.id.topic_lib);
+        hideBtn = findViewById(R.id.hide_btn);
         chatBtn = findViewById(R.id.chat_btn);
-        sendPicBtn = findViewById(R.id.send_pic_btn);
+        optionBtn = findViewById(R.id.option_btn);
         inputET= findViewById(R.id.input_ET);
         sendPicView = findViewById(R.id.send_pic_view);
         cameraBtn = findViewById(R.id.camera_bnt);
         galleryBtn = findViewById(R.id.gallery_bnt);
+        topicBtn = findViewById(R.id.topic_btn);
         mainCoverView = findViewById(R.id.main_cover_view);
         botCoverView = findViewById(R.id.bot_cover_view);
 
+        hideBtn.setOnClickListener(this);
         chatBtn.setOnClickListener(this);
-        sendPicBtn.setOnClickListener(this);
+        optionBtn.setOnClickListener(this);
         cameraBtn.setOnClickListener(this);
         galleryBtn.setOnClickListener(this);
+        topicBtn.setOnClickListener(this);
 
         //firebase初始化
         auth = FirebaseAuth.getInstance();
@@ -114,6 +131,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         CHAT_ROOM_TYPE = getIntent().getExtras().getString("chat_room_type");
         FRIEND_TYPE = getIntent().getExtras().getString("friend_type");
         loadMsg();
+        loadTopic();
         buildMsgSonarTask();
         msgSonarTask.activateTask(1000 , 1000);
         setupTopToolBar();
@@ -122,17 +140,23 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onClick(View view) {
         switch (view.getId()){
+            case R.id.hide_btn:
+                hideTopicLib();
+                break;
             case R.id.chat_btn:
                 sendMsg();
                 break;
-            case R.id.send_pic_btn:
-                sendPic();
+            case R.id.option_btn:
+                callOption();
                 break;
             case R.id.camera_bnt:
                 cameraOnClick();
                 break;
             case R.id.gallery_bnt:
                 galleryOnClick();
+                break;
+            case R.id.topic_btn:
+                showTopicLib();
                 break;
         }
     }
@@ -289,12 +313,28 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
                 list.scrollToPosition(chatList.size()-1);//自動滾動到底部
             }
         } , 2500);
-
-        chatAdapter.setOnItemClickListener(new ChatAdapter.OnItemClickListener() {
+        //照片點擊方法
+        chatAdapter.setImgClickListener(new ChatAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 Intent intent = new Intent(getApplicationContext() , BrowseImgActivity.class);
                 intent.putExtra("picUri" , chatList.get(position).getImgUrl());
+                startActivity(intent);
+            }
+        });
+        //大頭貼點擊方法
+        chatAdapter.setSelfieClickListener(new ChatAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                //如果進入的是自己的檔案則editable = true
+                String UID = chatList.get(position).getUserUID();
+                boolean editable = false;
+                if(UID.equals(auth.getCurrentUser().getUid())){
+                    editable = true;
+                }
+                Intent intent = new Intent(getApplicationContext() , ProfileActivity.class);
+                intent.putExtra("UID" , chatList.get(position).getUserUID());
+                intent.putExtra("editable" , editable);
                 startActivity(intent);
             }
         });
@@ -338,6 +378,38 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         //update other Random_Friends lastLine
         firestore.collection("User").document(otherUID).collection(FRIEND_TYPE)
                 .document(auth.getCurrentUser().getUid()).update(update);
+    }
+
+    private void loadTopic(){
+        topics = new ArrayList<>();
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Topic_Lib")
+                .orderBy("time" , Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                            topics.add(new ItemTopic(documentSnapshot.getId() , documentSnapshot.getString("topic")));
+                        }
+                        setupTopicRecyclerView();
+                    }
+                });
+    }
+
+    private void setupTopicRecyclerView() {
+        topicList.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this , LinearLayoutManager.HORIZONTAL , false);//水平排版
+        sendableTopicAdapter = new SendableTopicAdapter(topics);
+        topicList.setLayoutManager(layoutManager);
+        topicList.setAdapter(sendableTopicAdapter);
+
+        sendableTopicAdapter.setOnItemClickListener(new SendableTopicAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                inputET.setText(topics.get(position).getTopic());
+                hideTopicLib();
+            }
+        });
     }
 
     //資料餵給資料庫都是由此function負責
@@ -579,7 +651,7 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         leaveAD.show();
     }
 
-    private void sendPic(){
+    private void callOption(){
         if(sendPicView.getVisibility() == View.INVISIBLE ){
             sendPicView.setVisibility(View.VISIBLE);
             Animation fadeIn = AnimationUtils.loadAnimation(this , R.anim.fade_in);
@@ -661,6 +733,60 @@ public class ChatRoomActivity extends AppCompatActivity implements View.OnClickL
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), Code.GALLERY_REQUEST);
+    }
+
+    private void showTopicLib(){
+        if(topics.size() == 0){
+            Toast.makeText(this , "您尚未儲存任何話題", Toast.LENGTH_LONG).show();
+        }else {
+            if(topicLib.getVisibility() == View.INVISIBLE){
+                //hide send pic view
+                mainCoverView.setVisibility(View.GONE);
+                botCoverView.setVisibility(View.GONE);
+                Animation fadeOut = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
+                fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        sendPicView.setVisibility(View.INVISIBLE);
+                    }
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                sendPicView.startAnimation(fadeOut);
+                //show topic list
+                topicLib.setVisibility(View.VISIBLE);
+                hideBtn.setVisibility(View.VISIBLE);
+                topicLib.startAnimation(AnimationUtils.loadAnimation(this , R.anim.fade_in));
+                hideBtn.startAnimation(AnimationUtils.loadAnimation(this , R.anim.fade_in));
+            }
+        }
+    }
+
+    private void hideTopicLib(){
+        Animation fadeOut = AnimationUtils.loadAnimation(getApplicationContext() , R.anim.fade_out);
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                topicLib.setVisibility(View.INVISIBLE);
+                hideBtn.setVisibility(View.INVISIBLE);
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        topicLib.startAnimation(fadeOut);
+        hideBtn.startAnimation(fadeOut);
     }
 
     @Override

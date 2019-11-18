@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="350dp"
+    android:layout_height="wrap_content"
+    android:padding="20dp">
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05"/>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95"/>
+
+    <EditText
+        android:id="@+id/topic_ET"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:hint="請輸入新增的話題"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/line1"
+        app:layout_constraintRight_toLeftOf="@id/line2"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"/>
+
+    <Button
+        android:id="@+id/confirm_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="確定"
+        android:textColor="@color/white"
+        android:background="@drawable/btn_style_blue"
+        app:layout_constraintTop_toBottomOf="@id/topic_ET"
+        android:layout_marginTop="10dp"
+        app:layout_constraintLeft_toLeftOf="@id/topic_ET"
+        app:layout_constraintRight_toRightOf="@id/topic_ET"/>
+
+
+
+</android.support.constraint.ConstraintLayout>

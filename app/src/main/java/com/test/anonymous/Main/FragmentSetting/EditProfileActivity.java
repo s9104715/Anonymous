@@ -45,7 +45,7 @@ import at.markushi.ui.CircleButton;
 import cc.cloudist.acplibrary.ACProgressConstant;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
+public class EditProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
     private CircleImageView selfie;
     private CircleButton editSelfieBtn;
@@ -84,7 +84,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_profile);
+        setContentView(R.layout.content_edit_profile);
 
         selfie = findViewById(R.id.selfie);
         editSelfieBtn = findViewById(R.id.edit_selfie_btn);
@@ -246,7 +246,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
     private void editSelfie(){
 
-        View v = getLayoutInflater().inflate(R.layout.dialog_change_selfie,null);
+        View v = getLayoutInflater().inflate(R.layout.dialog_selfie_option,null);
         AlertDialog.Builder ADBuider = new AlertDialog.Builder(this)
                 .setTitle("請選擇")
                 .setView(v);
@@ -277,14 +277,14 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        v.findViewById(R.id.delete_bnt).setOnClickListener(new View.OnClickListener() {
+        v.findViewById(R.id.delete_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 changeSelfieAD.dismiss();
                 //show loadingPD
                 final LoadingProcessDialog loadingPD = new LoadingProcessDialog(ACProgressConstant.DIRECT_CLOCKWISE ,
-                        Color.WHITE , false , false , ProfileActivity.this)
+                        Color.WHITE , false , false , EditProfileActivity.this)
                         .show();
 
                 final String defaultSelfieUrl = getResources().getString(R.string.user_default_selfie_url);
@@ -675,7 +675,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
 
             //show loadingPD
             final LoadingProcessDialog loadingPD = new LoadingProcessDialog(ACProgressConstant.DIRECT_CLOCKWISE ,
-                    Color.WHITE , false , false , ProfileActivity.this)
+                    Color.WHITE , false , false , EditProfileActivity.this)
                     .show();
 
             //upload file
@@ -706,7 +706,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                                                     .centerCrop()
                                                     .into(selfie);//取得大頭貼
 
-                                            Toast.makeText(ProfileActivity.this , "修改大頭貼成功！" , Toast.LENGTH_LONG).show();
+                                            Toast.makeText(EditProfileActivity.this , "修改大頭貼成功！" , Toast.LENGTH_LONG).show();
                                         }
                                     });
                         }

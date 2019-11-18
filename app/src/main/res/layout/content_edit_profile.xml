@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    android:layout_alignParentBottom="true">
+
+    <View
+        android:id="@+id/top_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/line1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:background="@drawable/side_nav_bar">
+    </View>
+
+    <ImageView
+        android:id="@+id/back_btn"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:tint="@color/white"
+        android:src="@drawable/ic_arrow_back_black_24dp" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25171" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/line2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.22"
+        android:orientation="horizontal"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/selfie"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/default_selfie"
+        app:layout_constraintTop_toTopOf="@id/line2"
+        app:layout_constraintBottom_toBottomOf="@id/line2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:civ_border_width="2dp"
+        app:civ_border_color="#AAAAAA"/>
+
+    <at.markushi.ui.CircleButton
+        android:id="@+id/edit_selfie_btn"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        app:cb_color="#008577"
+        android:src="@drawable/ic_menu_camera"
+        app:cb_pressedRingWidth="8dp"
+        app:layout_constraintTop_toTopOf="@id/selfie"
+        app:layout_constraintLeft_toLeftOf="@id/selfie"
+        android:layout_marginTop="55dp"
+        android:layout_marginLeft="55dp"/>
+
+    <ScrollView
+        android:id="@+id/sv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/line1"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <android.support.constraint.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:scrollbars="vertical"
+            android:paddingBottom="20dp">
+
+            <android.support.constraint.Guideline
+                android:id="@+id/line3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintGuide_percent="0.5"
+                android:orientation="vertical"/>
+
+            <TextView
+                android:id="@+id/age_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="年齡"
+                android:textSize="16dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginTop="40dp"
+                android:layout_marginLeft="20dp"/>
+
+            <EditText
+                android:id="@+id/age_ET"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="45dp"
+                android:inputType="number"
+                android:background="@drawable/chat_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/age_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@id/line3"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="10dp"/>
+
+            <RadioGroup
+                android:id="@+id/gender_RG"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="@id/age_ET"
+                app:layout_constraintBottom_toBottomOf="@id/age_ET"
+                app:layout_constraintLeft_toRightOf="@id/line3"
+                app:layout_constraintRight_toRightOf="@id/name_ET">
+
+                <RadioButton
+                    android:id="@+id/male_RB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="男"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/female_RB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="女"/>
+            </RadioGroup>
+
+            <View
+                android:id="@+id/gender_cover_view"
+                android:layout_width="92dp"
+                android:layout_height="32dp"
+                android:background="@color/transparent"
+                app:layout_constraintTop_toTopOf="@id/gender_RG"
+                app:layout_constraintLeft_toLeftOf="@id/gender_RG">
+            </View>
+
+            <ImageView
+                android:id="@+id/edit_age_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/edit"
+                app:layout_constraintTop_toTopOf="@id/age_ET"
+                app:layout_constraintBottom_toBottomOf="@id/age_ET"
+                app:layout_constraintRight_toRightOf="@id/age_ET"
+                android:layout_marginRight="15dp"/>
+
+            <TextView
+                android:id="@+id/name_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="暱稱"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@id/age_ET"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:id="@+id/name_ET"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:paddingLeft="15dp"
+                android:paddingRight="45dp"
+                android:background="@drawable/chat_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/name_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"/>
+
+            <ImageView
+                android:id="@+id/edit_name_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/edit"
+                app:layout_constraintTop_toTopOf="@id/name_ET"
+                app:layout_constraintBottom_toBottomOf="@id/name_ET"
+                app:layout_constraintRight_toRightOf="@id/name_ET"
+                android:layout_marginRight="15dp"/>
+
+            <TextView
+                android:id="@+id/career_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="職業"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@id/name_ET"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="20dp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/career_list"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/chat_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/career_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:paddingLeft="6dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingRight="45dp">
+
+
+            </android.support.v7.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/edit_career_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/edit"
+                app:layout_constraintTop_toTopOf="@id/career_list"
+                app:layout_constraintBottom_toBottomOf="@id/career_list"
+                app:layout_constraintRight_toRightOf="@id/career_list"
+                android:layout_marginRight="15dp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/fix_career_list"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/chat_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/career_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:paddingLeft="6dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingRight="45dp"
+                android:visibility="gone">
+
+
+            </android.support.v7.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/fix_edit_career_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/done"
+                app:layout_constraintTop_toTopOf="@id/fix_career_list"
+                app:layout_constraintBottom_toBottomOf="@id/fix_career_list"
+                app:layout_constraintRight_toRightOf="@id/fix_career_list"
+                android:layout_marginRight="15dp"
+                android:visibility="gone"/>
+
+
+            <TextView
+                android:id="@+id/hobby_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="興趣"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@id/career_list"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="20dp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/hobby_list"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/chat_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/hobby_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:paddingLeft="6dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingRight="45dp">
+            </android.support.v7.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/edit_hobby_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/edit"
+                app:layout_constraintTop_toTopOf="@id/hobby_list"
+                app:layout_constraintBottom_toBottomOf="@id/hobby_list"
+                app:layout_constraintRight_toRightOf="@id/hobby_list"
+                android:layout_marginRight="15dp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/fix_hobby_list"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/chat_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/hobby_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:paddingLeft="6dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:paddingRight="45dp"
+                android:visibility="gone">
+            </android.support.v7.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/fix_edit_hobby_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/done"
+                app:layout_constraintTop_toTopOf="@id/fix_hobby_list"
+                app:layout_constraintBottom_toBottomOf="@id/fix_hobby_list"
+                app:layout_constraintRight_toRightOf="@id/fix_hobby_list"
+                android:layout_marginRight="15dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/intro_TV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="自我介紹"
+                android:textSize="16dp"
+                app:layout_constraintTop_toBottomOf="@id/hobby_list"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="20dp"/>
+
+            <EditText
+                android:id="@+id/intro_ET"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:hint="在想什麼....."
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:paddingTop="10dp"
+                android:gravity="top"
+                android:background="@drawable/intro_edit_text_style"
+                app:layout_constraintTop_toBottomOf="@id/intro_TV"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"/>
+
+            <ImageView
+                android:id="@+id/edit_intro_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/edit"
+                app:layout_constraintTop_toTopOf="@id/intro_ET"
+                app:layout_constraintRight_toRightOf="@id/intro_ET"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="15dp" />
+
+
+        </android.support.constraint.ConstraintLayout>
+
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>

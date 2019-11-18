@@ -34,7 +34,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
     private FirebaseAuth auth;
 
     //點擊效果
-    private OnItemClickListener clickListener;
+    private OnItemClickListener imgClickListener;
+    private OnItemClickListener selfieClickListener;
 
     public interface OnItemClickListener {
         void onItemClick(int position);
@@ -57,7 +58,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
         private ImageView myImg;
         private TextView myTime , myImgTime;
 
-        private BaseViewHolder(View itemView , final OnItemClickListener listener) {
+        private BaseViewHolder(View itemView , final OnItemClickListener imgListener , final OnItemClickListener selfieListener) {
             super(itemView);
 
             cl = itemView.findViewById(R.id.cl);
@@ -74,22 +75,34 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
             myImgTime = itemView.findViewById(R.id.my_img_time);
             myTime = itemView.findViewById(R.id.my_time);
 
-            //監聽器設置
-            View.OnClickListener onClickListener = new View.OnClickListener() {
+            //img監聽器設置
+            View.OnClickListener imgOnClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (listener != null) {
+                    if (imgListener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            listener.onItemClick(position);
+                            imgListener.onItemClick(position);
                         }
                     }
                 }
             };
-//            otherSelfie.setOnClickListener(onClickListener);
-            otherImg.setOnClickListener(onClickListener);
-//            mySelfie.setOnClickListener(onClickListener);
-            myImg.setOnClickListener(onClickListener);
+            otherImg.setOnClickListener(imgOnClickListener);
+            myImg.setOnClickListener(imgOnClickListener);
+            //selfie監聽器設置
+            View.OnClickListener selfieOnClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (selfieListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            selfieListener.onItemClick(position);
+                        }
+                    }
+                }
+            };
+            otherSelfie.setOnClickListener(selfieOnClickListener);
+            mySelfie.setOnClickListener(selfieOnClickListener);
         }
     }
 
@@ -103,7 +116,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
     @Override
     public BaseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chat ,parent , false);
-        viewHolder = new BaseViewHolder(v, clickListener);
+        viewHolder = new BaseViewHolder(v, imgClickListener , selfieClickListener);
         return viewHolder;
     }
 
@@ -187,8 +200,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.BaseViewHolder
         return viewHolder;
     }
 
-    public void setOnItemClickListener(OnItemClickListener clickListener) {
-        this.clickListener = clickListener;
+    public void setImgClickListener(OnItemClickListener imgClickListener) {
+        this.imgClickListener = imgClickListener;
+    }
+
+    public void setSelfieClickListener(OnItemClickListener selfieClickListener) {
+        this.selfieClickListener = selfieClickListener;
     }
 }
 

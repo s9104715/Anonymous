@@ -86,31 +86,32 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        }else if (FragmentRandomChat.editNameView!=null && FragmentRandomChat.editNameView.getVisibility() == View.VISIBLE){
-            new Keyboard(getSystemService(INPUT_METHOD_SERVICE) , this.getCurrentFocus()).close();
-            FragmentRandomChat.chatBtn.setVisibility(View.VISIBLE);
-            Animation move = AnimationUtils.loadAnimation(this , R.anim.move_down);
-            move.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    FragmentRandomChat.coverView.setVisibility(View.GONE);
-                    FragmentRandomChat.editNameView.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-
-                }
-            });
-            FragmentRandomChat.editNameView.startAnimation(move);
         }else {
             super.onBackPressed();
         }
+//        if (FragmentRandomChat.editNameView!=null && FragmentRandomChat.editNameView.getVisibility() == View.VISIBLE){
+//            new Keyboard(getSystemService(INPUT_METHOD_SERVICE) , this.getCurrentFocus()).close();
+//            FragmentRandomChat.chatBtn.setVisibility(View.VISIBLE);
+//            Animation move = AnimationUtils.loadAnimation(this , R.anim.move_down);
+//            move.setAnimationListener(new Animation.AnimationListener() {
+//                @Override
+//                public void onAnimationStart(Animation animation) {
+//
+//                }
+//
+//                @Override
+//                public void onAnimationEnd(Animation animation) {
+//                    FragmentRandomChat.coverView.setVisibility(View.GONE);
+//                    FragmentRandomChat.editNameView.setVisibility(View.GONE);
+//                }
+//
+//                @Override
+//                public void onAnimationRepeat(Animation animation) {
+//
+//                }
+//            });
+//            FragmentRandomChat.editNameView.startAnimation(move);
+//        }
     }
 
     @Override

@@ -53,25 +53,31 @@
             android:theme="@style/AppTheme">
         </activity>
 
+        <activity android:name=".Main.ChatRoomActivity"
+            android:label="聊天室"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".Main.ProfileActivity"
+            android:label="檔案"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
         <activity android:name=".Main.FragmentRandomChat.RandomChatWaitingActivity"
             android:label="搜尋朋友"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".Main.FragmentRandomChat.ChatRoomActivity"
-            android:label="聊天室"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
-
-        <activity android:name=".BrowseImgActivity"
+        <activity android:name=".Main.BrowseImgActivity"
             android:label="查看圖片"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".Main.FragmentSetting.ProfileActivity"
+        <activity android:name=".Main.FragmentSetting.EditProfileActivity"
             android:label="個人檔案"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
@@ -93,6 +99,13 @@
             android:label="邀請"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity android:name=".Main.FragmentSetting.TopicActivity"
+            android:label="我的話題庫"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+
         </activity>
 
         <meta-data

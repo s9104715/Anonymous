@@ -3,6 +3,8 @@ package com.test.anonymous.Main.FragmentPosSearch;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -13,13 +15,17 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,9 +39,10 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.test.anonymous.Main.FragmentRandomChat.ChatRoomActivity;
+import com.test.anonymous.Main.ChatRoomActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.Code;
+import com.test.anonymous.Tools.Keyboard;
 import com.test.anonymous.Tools.LoadingProcessDialog;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
@@ -43,7 +50,9 @@ import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsCompara
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import at.markushi.ui.CircleButton;
 import cc.cloudist.acplibrary.ACProgressConstant;
@@ -66,6 +75,13 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
     //location
     private FusedLocationProviderClient fusedLocationClient;
 
+    //on long click option
+    public static View coverView;
+    private AlertDialog friendsOnLongClickAD;
+    public static ConstraintLayout editNameView;
+    private EditText editNameET;
+    private Button editNameBtn;
+
     //Firebase
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
@@ -81,6 +97,11 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
         invitationBtn = view.findViewById(R.id.invitation_btn);
         unRead = view.findViewById(R.id.unRead_line_num);
         unReadTV = view.findViewById(R.id.unRead_line_num_TV);
+        //on long click option
+        coverView = view.findViewById(R.id.cover_view);
+        editNameView = view.findViewById(R.id.edit_name_view);
+        editNameET = view.findViewById(R.id.edit_name_ET);
+        editNameBtn = view.findViewById(R.id.edit_name_btn);
 
         searchBtn.setOnClickListener(this);
         invitationBtn.setOnClickListener(this);
@@ -298,37 +319,253 @@ public class FragmentPosSearch extends Fragment implements View.OnClickListener 
             }
         });
 
-//        friendsAdapter.setLongClickListener(new FriendsAdapter.OnItemLongClickListener() {
-//            @Override
-//            public void onItemLongClick(final int position) {
-//                View view = getLayoutInflater().inflate(R.layout.dialog_friends_on_long_click_option , null);
-//                AlertDialog.Builder ADBuilder = new AlertDialog.Builder(getContext())
-//                        .setTitle(friends.get(position).getName())
-//                        .setView(view);
-//                friendsOnLongClickAD = ADBuilder.create();
-//                friendsOnLongClickAD.show();
-//                view.findViewById(R.id.edit_name_btn).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        friendsOnLongClickAD.dismiss();
-//                        editName(friends.get(position) , position);
-//                    }
-//                });
-//                view.findViewById(R.id.block_btn).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        friendsOnLongClickAD.dismiss();
-//                        block(friends.get(position) , position);
-//                    }
-//                });
-//                view.findViewById(R.id.leave_btn).setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        friendsOnLongClickAD.dismiss();
-//                        leave(friends.get(position) , position);
-//                    }
-//                });
-//            }
-//        });
+        friendsAdapter.setLongClickListener(new FriendsAdapter.OnItemLongClickListener() {
+            @Override
+            public void onItemLongClick(final int position) {
+                View view = getLayoutInflater().inflate(R.layout.dialog_friends_option, null);
+                AlertDialog.Builder ADBuilder = new AlertDialog.Builder(getContext())
+                        .setTitle(friends.get(position).getName())
+                        .setView(view);
+                friendsOnLongClickAD = ADBuilder.create();
+                friendsOnLongClickAD.show();
+                view.findViewById(R.id.edit_name_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        friendsOnLongClickAD.dismiss();
+                        editName(friends.get(position) , position);
+                    }
+                });
+                view.findViewById(R.id.block_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        friendsOnLongClickAD.dismiss();
+                        block(friends.get(position) , position);
+                    }
+                });
+                view.findViewById(R.id.leave_btn).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        friendsOnLongClickAD.dismiss();
+                        leave(friends.get(position) , position);
+                    }
+                });
+            }
+        });
+    }
+
+    //修改朋友名
+    private void editName(final ItemFriends itemFriends , final int position){
+
+        coverView.setVisibility(View.VISIBLE);
+        editNameView.setVisibility(View.VISIBLE);
+        Animation moveUp = AnimationUtils.loadAnimation(getContext() , R.anim.move_upward);
+        moveUp.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                searchBtn.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        editNameView.startAnimation(moveUp);
+        editNameET.setText(itemFriends.getName());
+        //outside view surround editNameBtn
+        coverView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //close editNameBtn
+                searchBtn.setVisibility(View.VISIBLE);
+                new Keyboard(getActivity().getSystemService(Context.INPUT_METHOD_SERVICE) , view).close();
+                Animation moveDown = AnimationUtils.loadAnimation(getContext() , R.anim.move_down);
+                moveDown.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        coverView.setVisibility(View.GONE);
+                        editNameView.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                editNameView.startAnimation(moveDown);
+            }
+        });
+
+        editNameBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!editNameET.getText().toString().equals(itemFriends.getName())){
+                    //DB
+                    Map<String , Object> update = new HashMap<>();
+                    update.put("name" , editNameET.getText().toString());
+                    firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
+                            .document(itemFriends.getUserUID()).update(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            //change friends list
+                            itemFriends.setName(editNameET.getText().toString());
+                            friendsAdapter.updateItem(position , itemFriends);
+                        }
+                    });
+                }
+                new Keyboard(getActivity().getSystemService(Context.INPUT_METHOD_SERVICE) , view).close();
+                searchBtn.setVisibility(View.VISIBLE);
+                Animation moveDown = AnimationUtils.loadAnimation(getContext() , R.anim.move_down);
+                moveDown.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        coverView.setVisibility(View.GONE);
+                        editNameView.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+                editNameView.startAnimation(moveDown);
+            }
+        });
+
+
+    }
+    //封鎖朋友
+    private void block(final ItemFriends itemFriends , final int position){
+
+        AlertDialog blockAD = new AlertDialog.Builder(getContext())
+                .setTitle("封鎖好友")
+                .setMessage(R.string.block_msg)
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        firestore.collection("User").document(itemFriends.getUserUID()).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(final DocumentSnapshot friendsDocumentSnapshot) {
+                                        //UI
+                                        friendsAdapter.removeItem(position);
+                                        //DB add block_list
+                                        Map<String , Object> update = new HashMap<>();
+                                        update.put("name" , friendsDocumentSnapshot.getString("name"));//get real name
+                                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Block_List")
+                                                .document(friendsDocumentSnapshot.getId()).set(update).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                //DB delete Pos_Search_Friends
+                                                firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Friends")
+                                                        .document(friendsDocumentSnapshot.getId()).delete();
+                                                //DB chatRoom
+                                                firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID()).get()
+                                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                                            @Override
+                                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                                if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                                                    //delete chatRoom
+                                                                    firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID()).collection("conversation")
+                                                                            .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                                        @Override
+                                                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                                            for (DocumentSnapshot conversationDocumentSnapshot : queryDocumentSnapshots){
+                                                                                //delete conversation
+                                                                                conversationDocumentSnapshot.getReference().delete();
+                                                                            }
+                                                                            firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                                                        }
+                                                                    });
+                                                                }else {
+                                                                    //update chatRoom
+                                                                    Map<String , Object> update = new HashMap<>();
+                                                                    update.put("userHasLeft" , true);
+                                                                    firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID())
+                                                                            .update(update);
+                                                                }
+                                                            }
+                                                        });
+                                            }
+                                        });
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        blockAD.show();
+    }
+    //刪除朋友
+    private void leave(final ItemFriends itemFriends , final int position){
+
+        AlertDialog leaveAD = new AlertDialog.Builder(getContext())
+                .setTitle("刪除好友")
+                .setMessage(R.string.leave_msg)
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //UI
+                        friendsAdapter.removeItem(position);
+                        //DB delete Pos_Search_Friends
+                        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Pos_Search_Friends")
+                                .document(itemFriends.getUserUID()).delete();
+                        //DB chatRoom
+                        firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID()).get()
+                                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        if(documentSnapshot.getBoolean("userHasLeft")!=null){
+                                            //delete chatRoom
+                                            firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID()).collection("conversation")
+                                                    .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                @Override
+                                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                    for (DocumentSnapshot conversationDocumentSnapshot : queryDocumentSnapshots){
+                                                        //delete conversation
+                                                        conversationDocumentSnapshot.getReference().delete();
+                                                    }
+                                                    firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID()).delete();
+                                                }
+                                            });
+                                        }else {
+                                            //update chatRoom
+                                            Map<String , Object> update = new HashMap<>();
+                                            update.put("userHasLeft" , true);
+                                            firestore.collection("PosSearchChatRoom").document(itemFriends.getChatRoomID())
+                                                    .update(update);
+                                        }
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .create();
+        leaveAD.show();
     }
 }

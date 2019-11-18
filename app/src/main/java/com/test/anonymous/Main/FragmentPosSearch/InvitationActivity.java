@@ -20,7 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-import com.test.anonymous.Main.FragmentRandomChat.ChatRoomActivity;
+import com.test.anonymous.Main.ChatRoomActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
@@ -218,7 +218,7 @@ public class InvitationActivity extends AppCompatActivity implements View.OnClic
         invitePD.setCancelable(false);
         invitePD.setCanceledOnTouchOutside(false);
         invitePD.setTitle("邀請");
-        invitePD.setMessage("邀請中.....");
+        invitePD.setMessage("處理中.....");
         invitePD.show();
     }
 

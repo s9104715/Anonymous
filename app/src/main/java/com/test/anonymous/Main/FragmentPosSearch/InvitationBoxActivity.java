@@ -20,7 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.test.anonymous.Main.FragmentRandomChat.ChatRoomActivity;
+import com.test.anonymous.Main.ChatRoomActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
@@ -175,7 +175,7 @@ public class InvitationBoxActivity extends AppCompatActivity {
             invitationAdapter.setLongClickListener(new InvitationAdapter.OnItemLongClickListener() {
                 @Override
                 public void onItemLongClick(final int position) {
-                    View view = getLayoutInflater().inflate(R.layout.dialog_invitations_on_long_click_option , null);
+                    View view = getLayoutInflater().inflate(R.layout.dialog_invitations_option, null);
                     AlertDialog.Builder ADBuilder = new AlertDialog.Builder(InvitationBoxActivity.this)
                             .setView(view);
                     onLongClickAD = ADBuilder.create();

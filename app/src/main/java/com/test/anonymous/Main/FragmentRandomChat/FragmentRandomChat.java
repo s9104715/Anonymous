@@ -27,6 +27,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.test.anonymous.Main.ChatRoomActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.Keyboard;
 import com.test.anonymous.Tools.LoadingProcessDialog;
@@ -56,9 +57,9 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
     private Task msgSonarTask;
 
     //on long click option
-    public static View coverView;
+    public  View coverView;
     private AlertDialog friendsOnLongClickAD;
-    public static ConstraintLayout editNameView;
+    public  ConstraintLayout editNameView;
     private EditText editNameET;
     private Button editNameBtn;
 
@@ -74,6 +75,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         list = view.findViewById(R.id.list);
         noFriends = view.findViewById(R.id.no_friends);
         chatBtn = view.findViewById(R.id.chat_btn);
+        //on long click option
         coverView = view.findViewById(R.id.cover_view);
         editNameView = view.findViewById(R.id.edit_name_view);
         editNameET = view.findViewById(R.id.edit_name_ET);
@@ -122,7 +124,8 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         //搜尋Random_Friends
         firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Random_Friends")
                 .orderBy("lastTime" , Query.Direction.DESCENDING)
-                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(final QuerySnapshot queryDocumentSnapshots) {
                 if(queryDocumentSnapshots.isEmpty()){
@@ -196,7 +199,7 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
         friendsAdapter.setLongClickListener(new FriendsAdapter.OnItemLongClickListener() {
             @Override
             public void onItemLongClick(final int position) {
-                View view = getLayoutInflater().inflate(R.layout.dialog_friends_on_long_click_option , null);
+                View view = getLayoutInflater().inflate(R.layout.dialog_friends_option, null);
                 AlertDialog.Builder ADBuilder = new AlertDialog.Builder(getContext())
                         .setTitle(friends.get(position).getName())
                         .setView(view);

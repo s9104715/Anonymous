@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class FragmentSetting extends Fragment {
     private TextView nameTV;
     private ConstraintLayout botView;
     private ViewPager profileVP , friendListVP , groupVP , topicLibVP , settingVP;
+    private ViewPager viewPagerTemp;//VP的暫存 用來指定
 
     //Firebase
     private FirebaseAuth auth;
@@ -44,7 +46,6 @@ public class FragmentSetting extends Fragment {
 
         selfie = view.findViewById(R.id.selfie);
         nameTV = view.findViewById(R.id.name_TV);
-
         botView = view.findViewById(R.id.bot_view);
         profileVP = view.findViewById(R.id.profile_VP);
         friendListVP = view.findViewById(R.id.friendList_VP);
@@ -63,6 +64,7 @@ public class FragmentSetting extends Fragment {
     public void onResume() {
         super.onResume();
         setupUserData();
+        scrollVPToOrigin(viewPagerTemp);
     }
 
     private void setupUI(){
@@ -92,12 +94,23 @@ public class FragmentSetting extends Fragment {
         });
         profileVP.setAdapter(settingAdapter);
         profileVP.setCurrentItem(1);
+
         friendListVP.setAdapter(new SettingAdapter(friendList));
         friendListVP.setCurrentItem(1);
+
         groupVP.setAdapter(new SettingAdapter(group));
         groupVP.setCurrentItem(1);
-        topicLibVP.setAdapter(new SettingAdapter(topicLib));
+
+        settingAdapter = new SettingAdapter(topicLib);
+        settingAdapter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                topicLibVP.setCurrentItem(0 , true);
+            }
+        });
+        topicLibVP.setAdapter(settingAdapter);
         topicLibVP.setCurrentItem(1);
+
         settingVP.setAdapter(new SettingAdapter(setting));
         settingVP.setCurrentItem(1);
 
@@ -112,22 +125,15 @@ public class FragmentSetting extends Fragment {
                 //復原
                 if(i == 0){
                     //start activity
+                    viewPagerTemp = profileVP;//assign temp
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            startActivity(new Intent(getContext() , ProfileActivity.class));
+                            startActivity(new Intent(getContext() , EditProfileActivity.class));
                         }
                     } , 200);
-                    //scroll to origin position
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            profileVP.setCurrentItem(1);
-                        }
-                    } , 1500);
                 }
             }
-
             @Override
             public void onPageScrollStateChanged(int i) {
 
@@ -183,17 +189,27 @@ public class FragmentSetting extends Fragment {
 
             @Override
             public void onPageSelected(int i) {
-
+                //復原
+                if(i == 0){
+                    //start activity
+                    viewPagerTemp = topicLibVP;//assign temp
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            startActivity(new Intent(getContext() , TopicActivity.class));
+                        }
+                    } , 200);
+                }
             }
 
             @Override
             public void onPageScrollStateChanged(int i) {
-                switch (i){
-                    //拖動、滑動事件
-                    case ViewPager.SCROLL_STATE_DRAGGING:
-
-                        break;
-                }
+//                switch (i){
+//                    //拖動、滑動事件
+//                    case ViewPager.SCROLL_STATE_DRAGGING:
+//
+//                        break;
+//                }
             }
         });
         settingVP.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -231,5 +247,20 @@ public class FragmentSetting extends Fragment {
                 nameTV.setText(documentSnapshot.getString("name"));
             }
         });
+    }
+
+    //將viewPager回歸到原位
+    private void scrollVPToOrigin(final ViewPager viewPager){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    //scroll to origin position
+                    viewPager.setCurrentItem(1);
+                }catch (Exception e){
+                    Log.e("VP_Error" , e.toString());
+                }
+            }
+        } , 500);
     }
 }

@@ -1,4 +1,4 @@
-package com.test.anonymous;
+package com.test.anonymous.Main;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -7,6 +7,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.squareup.picasso.Picasso;
+import com.test.anonymous.R;
 
 public class BrowseImgActivity extends AppCompatActivity {
 
