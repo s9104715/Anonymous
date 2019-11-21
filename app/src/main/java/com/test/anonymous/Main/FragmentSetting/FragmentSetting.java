@@ -196,7 +196,7 @@ public class FragmentSetting extends Fragment {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            startActivity(new Intent(getContext() , TopicActivity.class));
+                            startActivity(new Intent(getContext() , MyTopicActivity.class));
                         }
                     } , 200);
                 }

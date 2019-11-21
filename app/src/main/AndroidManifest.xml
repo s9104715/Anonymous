@@ -101,11 +101,16 @@
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
-        <activity android:name=".Main.FragmentSetting.TopicActivity"
-            android:label="我的話題庫"
+        <activity android:name=".Main.FragmentSetting.MyTopicActivity"
+            android:label="我的話題"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
+        <activity android:name=".Main.FragmentSetting.TopicLibActivity"
+            android:label="話題庫"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
         </activity>
 
         <meta-data

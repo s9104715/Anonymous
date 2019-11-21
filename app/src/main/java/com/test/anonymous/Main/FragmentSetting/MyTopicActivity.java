@@ -1,5 +1,6 @@
 package com.test.anonymous.Main.FragmentSetting;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -9,9 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -23,17 +22,14 @@ import com.test.anonymous.Tools.MyTime;
 import com.test.anonymous.Tools.RandomCode;
 import com.test.anonymous.Tools.RecyclerViewTools.TopicList.ItemTopic;
 import com.test.anonymous.Tools.RecyclerViewTools.TopicList.TopicAdapter;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import at.markushi.ui.CircleButton;
 
-public class TopicActivity extends AppCompatActivity implements View.OnClickListener {
+public class MyTopicActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageView backBtn;
     private CircleButton addBtn;
     //RecyclerView
     private List<ItemTopic> topics;
@@ -44,6 +40,7 @@ public class TopicActivity extends AppCompatActivity implements View.OnClickList
     private ConstraintLayout noTopic;
     private AlertDialog addAD;
     private AlertDialog addTopicAD;
+    private ArrayList<String> downloadId;//儲存下載得到的topic id
 
     //Firebase
     private FirebaseAuth auth;
@@ -52,36 +49,52 @@ public class TopicActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.content_topic);
+        setContentView(R.layout.app_bar_my_topic);
 
-        backBtn = findViewById(R.id.back_btn);
         addBtn = findViewById(R.id.add_btn);
         list = findViewById(R.id.list);
         noTopic = findViewById(R.id.no_topic);
 
-        backBtn.setOnClickListener(this);
         addBtn.setOnClickListener(this);
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        loadTopic();
+        setupTopToolBar();
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.back_btn:
-                super.onBackPressed();
-                break;
             case R.id.add_btn:
                 add();
                 break;
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadTopic();
+    }
+
+    private void setupTopToolBar() {
+
+        android.support.v7.widget.Toolbar toolbar = findViewById(R.id.my_topic_toolbar);
+        setSupportActionBar(toolbar);
+        //toolBar返回鍵
+        toolbar.setNavigationIcon(R.drawable.abc_ic_ab_back_material);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+    }
+
     private void loadTopic(){
         topics = new ArrayList<>();
+        downloadId = new ArrayList<>();
         firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Topic_Lib")
                 .orderBy("time" , Query.Direction.ASCENDING)
                 .get()
@@ -93,6 +106,11 @@ public class TopicActivity extends AppCompatActivity implements View.OnClickList
                         }else {
                             for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots){
                                 topics.add(new ItemTopic(documentSnapshot.getId() , documentSnapshot.getString("topic")));
+                                if(documentSnapshot.getString("downloadFromId")!=null){
+                                    //屬於download type
+                                    topics.get(topics.size()-1).setDownloadType(true);//將最後一筆改成download type
+                                    downloadId.add(documentSnapshot.getString("downloadFromId"));//收集下載得到的topic id
+                                }
                             }
                         }
                         setupRecyclerView();
@@ -143,7 +161,7 @@ public class TopicActivity extends AppCompatActivity implements View.OnClickList
             public void onClick(View v) {
                 addAD.dismiss();
                 final View view = getLayoutInflater().inflate(R.layout.dialog_add_topic, null);
-                AlertDialog.Builder ADBuilder = new AlertDialog.Builder(TopicActivity.this)
+                AlertDialog.Builder ADBuilder = new AlertDialog.Builder(MyTopicActivity.this)
                         .setTitle("新增話題庫")
                         .setView(view);
                 addTopicAD = ADBuilder.create();
@@ -163,14 +181,16 @@ public class TopicActivity extends AppCompatActivity implements View.OnClickList
                         addTopicAD.dismiss();
                     }
                 });
-
             }
         });
 
         view.findViewById(R.id.browse_topic_lib_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(getApplicationContext() ,  TopicLibActivity.class);
+                intent.putExtra("downloadId" , downloadId);
+                startActivity(intent);
+                addAD.dismiss();
             }
         });
     }
@@ -193,14 +213,37 @@ public class TopicActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void deleteTopic(final int position){
-        String id = topics.get(position).getId();
+        ItemTopic topic = topics.get(position);
         //UI
         topicAdapter.delete(position);
         if(topics.size() == 0){
             noTopic.setVisibility(View.VISIBLE);
         }
         //DB
-        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Topic_Lib").document(id)
-                .delete();
+        firestore.collection("User").document(auth.getCurrentUser().getUid()).collection("Topic_Lib").document(topic.getId())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if(documentSnapshot.getString("downloadFromId")!=null){
+                            unDownload(documentSnapshot.getString("downloadFromId"));
+                        }
+                        documentSnapshot.getReference().delete();
+                    }
+                });
+    }
+
+    //downloadTime -1
+    private void unDownload(String id){
+        downloadId.remove(id);
+        firestore.collection("Topic_Lib").document(id).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            Map<String , Object> update = new HashMap<>();
+                            update.put("downloadTime" , documentSnapshot.get("downloadTime" , Integer.TYPE) -1);
+                            documentSnapshot.getReference().update(update);
+                        }
+                });
     }
 }

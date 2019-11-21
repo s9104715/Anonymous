@@ -92,9 +92,9 @@ public class TopicAdapter extends RecyclerView.Adapter<TopicAdapter.BaseViewHold
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder baseViewHolder, final int position) {
 
-        ItemTopic hobby = list.get(position);
-        baseViewHolder.topic.setText(hobby.getTopic());
-        if(hobby.isSelected()) {
+        ItemTopic topic = list.get(position);
+        baseViewHolder.topic.setText(topic.getTopic());
+        if(topic.isSelected()) {
             baseViewHolder.deleteBtn.setVisibility(View.VISIBLE);
         }else {
             baseViewHolder.deleteBtn.setVisibility(View.INVISIBLE);

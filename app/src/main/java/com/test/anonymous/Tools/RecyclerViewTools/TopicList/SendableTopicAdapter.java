@@ -61,8 +61,8 @@ public class SendableTopicAdapter extends RecyclerView.Adapter<SendableTopicAdap
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder baseViewHolder, final int position) {
 
-        ItemTopic hobby = list.get(position);
-        baseViewHolder.topic.setText(hobby.getTopic());
+        ItemTopic topic = list.get(position);
+        baseViewHolder.topic.setText(topic.getTopic());
     }
 
     @Override
