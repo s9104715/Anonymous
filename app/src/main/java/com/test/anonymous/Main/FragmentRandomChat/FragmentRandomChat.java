@@ -1,14 +1,19 @@
 package com.test.anonymous.Main.FragmentRandomChat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.test.anonymous.Main.ChatRoomActivity;
+import com.test.anonymous.Main.MainActivity;
 import com.test.anonymous.R;
 import com.test.anonymous.Tools.Keyboard;
 import com.test.anonymous.Tools.LoadingProcessDialog;
@@ -35,6 +41,8 @@ import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.FriendsAdapter;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriends;
 import com.test.anonymous.Tools.RecyclerViewTools.FriendsList.ItemFriendsComparator;
 import com.test.anonymous.Tools.Task;
+import com.test.anonymous.Tools.TextProcessor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -536,6 +544,12 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                                                                                         lastLine ,
                                                                                         lastTime ,
                                                                                         (lineNum - readLine)));
+                                                                                //notification
+                                                                                String num = "";
+                                                                                if((lineNum - readLine) > 1){
+                                                                                    num = "+"+ (lineNum - readLine);
+                                                                                }
+                                                                                getNotification(userDocumentSnapshot.getString("name") , lastLine + " " + num , chatRoomID, friendUID);
                                                                             }
                                                                         });
                                                             }
@@ -550,5 +564,36 @@ public class FragmentRandomChat extends Fragment implements View.OnClickListener
                 }
             }
         });
+    }
+
+    private void getNotification(String name , String msg , String chatRoomID , String otherUID){
+        //channel
+        String channelId = "default_notification_channel_id";
+
+        Intent notiIntent = new Intent(getContext() , ChatRoomActivity.class);
+        notiIntent.putExtra("chatRoomID" , chatRoomID)
+                .putExtra("myUID" , auth.getCurrentUser().getUid())
+                .putExtra("otherUID" , otherUID)
+                .putExtra("name" , name)
+                .putExtra("chat_room_type" , "RandomChatRoom")
+                .putExtra("friend_type" , "Random_Friends");
+        PendingIntent contentIntent = PendingIntent.getActivity(getContext() , 0 , notiIntent , PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //notification
+        long[] vibrate = {0,100,200,300};
+        NotificationCompat.Builder notiBuilder = new NotificationCompat.Builder(getContext(), channelId)
+                .setAutoCancel(true)
+                .setVibrate(vibrate)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Anonymous")
+                .setContentText(name +" : "+new TextProcessor().textFormat(msg , 10))
+                .setContentIntent(contentIntent);
+
+        NotificationManager manager = (NotificationManager) getActivity().getSystemService(getActivity().NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channelId, "Channel human readable title", NotificationManager.IMPORTANCE_DEFAULT);
+            manager.createNotificationChannel(channel);
+        }
+        manager.notify(0 , notiBuilder.build());
     }
 }
